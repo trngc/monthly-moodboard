@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>MoodAlbum — a year in photographs</title>
+    <meta
+      name="description"
+      content="A year-in-photos album, organized by month, themed by the mood of your own photos."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=DM+Serif+Display:ital@0;1&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Inter:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Work+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- ===== INTRO / COMPOSE SCREEN ===== -->
+    <main id="intro" class="intro" aria-label="Compose your album">
+      <header class="intro__masthead">
+        <div class="masthead__row">
+          <span class="masthead__issue">Vol. <em>01</em></span>
+          <span class="masthead__dot" aria-hidden="true"></span>
+          <span class="masthead__year" id="introYear">MMXXVI</span>
+        </div>
+        <h1 class="masthead__title">
+          <span class="masthead__title-line">Mood</span>
+          <span class="masthead__title-line italic">Album</span>
+        </h1>
+        <p class="masthead__tagline">
+          A year, in photographs. Composed month by month, themed by the mood
+          your own pictures carry.
+        </p>
+      </header>
+
+      <section class="composer" aria-label="Add photos by month">
+        <div class="composer__head">
+          <h2 class="composer__eyebrow">The Composition</h2>
+          <p class="composer__hint">
+            Add one or more photos to any month. Empty months are skipped.
+            Reorder later by simply scrolling.
+          </p>
+        </div>
+
+        <ol class="months" id="months"></ol>
+
+        <div class="composer__cta">
+          <button
+            id="generateBtn"
+            class="cta"
+            type="button"
+            disabled
+            aria-disabled="true"
+          >
+            <span class="cta__label">Compose the Album</span>
+            <span class="cta__meta" id="ctaMeta">add photos to begin</span>
+          </button>
+          <button
+            id="resetBtn"
+            type="button"
+            class="ghost"
+            hidden
+          >
+            Start over
+          </button>
+        </div>
+      </section>
+
+      <footer class="intro__foot">
+        <span>MoodAlbum</span>
+        <span>·</span>
+        <span>Client-side colour analysis</span>
+        <span>·</span>
+        <span>No accounts, no uploads</span>
+      </footer>
+    </main>
+
+    <!-- ===== ALBUM (generated dynamically) ===== -->
+    <section id="album" class="album" hidden aria-label="Your album"></section>
+
+    <!-- ===== ANALYSIS OVERLAY ===== -->
+    <div id="loader" class="loader" hidden aria-hidden="true">
+      <div class="loader__inner">
+        <div class="loader__bar"><span id="loaderBar"></span></div>
+        <p class="loader__label">
+          <span class="loader__title">Reading the light</span>
+          <span class="loader__sub" id="loaderSub">sampling colour…</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Hidden input for file picking -->
+    <input
+      id="filePicker"
+      type="file"
+      accept="image/*"
+      multiple
+      hidden
+    />
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
