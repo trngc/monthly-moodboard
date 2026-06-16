@@ -1,0 +1,20 @@
+[
+  {
+    "month": "January",
+    "mood": "Ember / Earthy\nTHE LIGHT READS LOW-BURN — RICH SATURATION, MID-KEY TONE",
+    "bg": "radial-gradient(120% 80% at 90% 0%, rgba(160,85,34,0.55), transparent 60%),\n      radial-gradient(90% 70% at 0% 100%, rgba(118,56,22,0.45), transparent 60%),\n      linear-gradient(180deg, rgb(236,219,201) 0%, rgb(220,194,174) 55%, rgb(217,200,187) 100%),\n      hsl(40, 18%, 90%)",
+    "dark": false
+  },
+  {
+    "month": "June",
+    "mood": "Moody / Editorial\nTHE LIGHT READS AFTER-HOURS — LOW SATURATION, DEEP TONE",
+    "bg": "radial-gradient(120% 80% at 80% 0%, rgba(28,30,38,0.5), transparent 60%),\n      radial-gradient(90% 70% at 10% 100%, rgba(53,51,57,0.4), transparent 60%),\n      linear-gradient(180deg, rgb(23,22,21) 0%, rgb(31,29,28) 55%, rgb(32,29,25) 100%)",
+    "dark": true
+  },
+  {
+    "month": "November",
+    "mood": "Cool / Minimal\nTHE LIGHT READS QUIET — LOW SATURATION, AIRY TONE",
+    "bg": "radial-gradient(120% 80% at 90% 0%, rgba(172,180,185,0.55), transparent 60%),\n      radial-gradient(90% 70% at 0% 100%, rgba(227,231,236,0.45), transparent 60%),\n      linear-gradient(180deg, rgb(237,235,231) 0%, rgb(223,223,219) 55%, rgb(241,239,234) 100%),\n      hsl(40, 18%, 92%)",
+    "dark": false
+  }
+]
