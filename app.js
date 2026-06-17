@@ -32,50 +32,105 @@ const boardsEl = $("#boards");
 const albumYearEl = $("#albumYear");
 
 /* =============================================================
-   Intro: render month rows
+   Intro: bento month grid
    ============================================================= */
+
+const MONTH_SHORT = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+// Size class per month (matches the grid-template-areas layout)
+const MONTH_SIZE = {
+  jan: "lg",  feb: "wide", mar: "wide",
+  apr: "sm",  may: "wide", jun: "tall",
+  jul: "wide",aug: "wide", sep: "lg",
+  oct: "sm",  nov: "wide", dec: "wide",
+};
+// 12 hand-picked card themes — playful, varied, with a couple of dark
+// accents for visual rhythm. Background, text color, and accent dot.
+const MONTH_THEMES = [
+  { bg: "#0c1e3e", fg: "#f5f3ee", accent: "#5b91ff" }, // Jan — deep navy
+  { bg: "#fbe7eb", fg: "#1a1714", accent: "#e25677" }, // Feb — pale rose
+  { bg: "#dbf1bd", fg: "#1a1714", accent: "#5fa84a" }, // Mar — fresh lime
+  { bg: "#f0e5d2", fg: "#1a1714", accent: "#a8804a" }, // Apr — cream
+  { bg: "#ffd1be", fg: "#1a1714", accent: "#e8543b" }, // May — coral
+  { bg: "#bee3ff", fg: "#0a2540", accent: "#1a76d2" }, // Jun — sky
+  { bg: "#ffec5c", fg: "#1a1714", accent: "#c79100" }, // Jul — bright yellow
+  { bg: "#f1ead6", fg: "#1a1714", accent: "#9c7e34" }, // Aug — ivory
+  { bg: "#ff7d3b", fg: "#1a1714", accent: "#7a2c0a" }, // Sep — pumpkin
+  { bg: "#892029", fg: "#ffe9da", accent: "#ffb0a3" }, // Oct — maroon
+  { bg: "#ffd9b8", fg: "#1a1714", accent: "#c66e30" }, // Nov — peach
+  { bg: "#0d0d10", fg: "#f5f3ee", accent: "#9b9bb0" }, // Dec — black
+];
 
 function renderMonths() {
   monthList.innerHTML = "";
   state.months.forEach((m, idx) => {
+    const short = MONTH_SHORT[idx];
+    const sizeClass = MONTH_SIZE[short];
+    const t = MONTH_THEMES[idx];
     const li = document.createElement("li");
-    li.className = "month";
-    li.dataset.month = idx;
-
-    li.innerHTML = `
-      <div class="month__head">
-        <span class="month__num">${String(idx + 1).padStart(2, "0")}</span>
-        <h3 class="month__name">${m.name}</h3>
-        <span class="month__count">${m.photos.length ? `${m.photos.length} photo${m.photos.length === 1 ? "" : "s"}` : "—"}</span>
-      </div>
-      <div class="month__actions">
-        <button class="btn btn--mini" type="button" data-add="${idx}">Add photos</button>
-      </div>
-      <div class="month__strip" data-strip="${idx}"></div>
-      <input type="file" accept="image/*" multiple hidden data-input="${idx}" />
-    `;
+    li.style.display = "contents"; // pass through grid placement to the card
     monthList.appendChild(li);
 
-    const strip = li.querySelector(`[data-strip="${idx}"]`);
-    m.photos.forEach((p) => strip.appendChild(makeThumb(p, idx)));
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = `bento__card bento__card--${short} bento__card--${sizeClass}`;
+    card.dataset.month = idx;
+    card.style.setProperty("--card-bg", t.bg);
+    card.style.setProperty("--card-fg", t.fg);
+    card.style.setProperty("--card-accent", t.accent);
+    card.setAttribute("aria-label", `${m.name}: ${m.photos.length} photo${m.photos.length === 1 ? "" : "s"}. Tap to add photos.`);
 
-    const input = li.querySelector(`[data-input="${idx}"]`);
-    li.querySelector(`[data-add="${idx}"]`).addEventListener("click", () => input.click());
+    card.innerHTML = `
+      <div class="bento__photos" data-photos="0"></div>
+      <div class="bento__head">
+        <span>${String(idx + 1).padStart(2, "0")} &middot; ${short.toUpperCase()}</span>
+        <span class="bento__plus" aria-hidden="true">+</span>
+      </div>
+      <div class="bento__body">
+        <span class="bento__name">${m.name}</span>
+        <span class="bento__count">${m.photos.length === 0 ? "Add photos" : `${m.photos.length} photo${m.photos.length === 1 ? "" : "s"}`}</span>
+      </div>
+      <input type="file" accept="image/*" multiple hidden data-input="${idx}" />
+      <button type="button" class="bento__clear" aria-label="Clear ${m.name}" tabindex="-1">&times;</button>
+    `;
+
+    li.appendChild(card);
+
+    // Update photos collage
+    paintBentoPhotos(card, m.photos);
+    card.classList.toggle("has-photos", m.photos.length > 0);
+
+    const input = card.querySelector(`[data-input="${idx}"]`);
+    const clearBtn = card.querySelector(".bento__clear");
+
+    // Tap card → open file picker (skip if click came from the clear button)
+    card.addEventListener("click", (e) => {
+      if (e.target.closest(".bento__clear")) return;
+      input.click();
+    });
     input.addEventListener("change", (e) => {
       handleFiles([...e.target.files], idx);
       input.value = "";
     });
-
-    // Drop handlers per month row
-    li.addEventListener("dragenter", (e) => { e.preventDefault(); li.classList.add("is-drag"); });
-    li.addEventListener("dragover", (e) => { e.preventDefault(); });
-    li.addEventListener("dragleave", (e) => {
-      if (!li.contains(e.relatedTarget)) li.classList.remove("is-drag");
+    input.addEventListener("click", (e) => e.stopPropagation());
+    clearBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      state.months[idx].photos.forEach((p) => URL.revokeObjectURL(p.url));
+      state.months[idx].photos = [];
+      // Clear cached analysis too so re-uploaded photos re-analyze cleanly
+      renderMonths();
     });
-    li.addEventListener("drop", (e) => {
+
+    // Drop directly on the card → push into this month
+    card.addEventListener("dragenter", (e) => { e.preventDefault(); card.classList.add("is-drag"); });
+    card.addEventListener("dragover", (e) => { e.preventDefault(); });
+    card.addEventListener("dragleave", (e) => {
+      if (!card.contains(e.relatedTarget)) card.classList.remove("is-drag");
+    });
+    card.addEventListener("drop", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      li.classList.remove("is-drag");
+      card.classList.remove("is-drag");
       const files = [...(e.dataTransfer?.files || [])].filter(isImage);
       if (files.length) handleFiles(files, idx);
     });
@@ -83,19 +138,21 @@ function renderMonths() {
   refreshCounters();
 }
 
-function makeThumb(photo, monthIdx) {
-  const t = document.createElement("div");
-  t.className = "thumb";
-  t.innerHTML = `
-    <img src="${photo.url}" alt="" />
-    <button type="button" class="thumb__x" aria-label="Remove">&times;</button>
-  `;
-  t.querySelector(".thumb__x").addEventListener("click", () => {
-    state.months[monthIdx].photos = state.months[monthIdx].photos.filter((p) => p.id !== photo.id);
-    URL.revokeObjectURL(photo.url);
-    renderMonths();
-  });
-  return t;
+function paintBentoPhotos(card, photos) {
+  const photosEl = card.querySelector(".bento__photos");
+  photosEl.innerHTML = "";
+  if (photos.length === 0) {
+    photosEl.dataset.photos = "0";
+    return;
+  }
+  const slots = Math.min(photos.length, 4);
+  photosEl.dataset.photos = photos.length >= 9 ? "9+" : String(photos.length);
+  for (let i = 0; i < slots; i++) {
+    const img = document.createElement("img");
+    img.src = photos[i].url;
+    img.alt = "";
+    photosEl.appendChild(img);
+  }
 }
 
 function refreshCounters() {
