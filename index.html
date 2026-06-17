@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f6f3ee" />
+  <meta name="description" content="MoodAlbum — a year of photos, organized by month, styled like an editorial lookbook." />
+  <title>MoodAlbum — a year in photos</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Serif+Display:ital@0;1&family=Italiana&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Libre+Caslon+Display&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&family=Space+Grotesk:wght@300;400;500&family=Manrope:wght@300;400;500&family=Work+Sans:wght@300;400;500&family=Archivo:wght@300;400;500&display=swap"
+  />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ============================================================ -->
+  <!--  INTRO / UPLOAD VIEW                                          -->
+  <!-- ============================================================ -->
+  <main id="intro" class="intro" aria-label="Build your album">
+    <header class="intro__masthead">
+      <div class="intro__rule" aria-hidden="true"></div>
+      <p class="intro__eyebrow">Volume I &middot; A Year, In Light</p>
+      <h1 class="intro__title">MoodAlbum</h1>
+      <p class="intro__lede">
+        A private, editorial album of your year. Drop photos into each month and
+        we'll read their colors, weather, and mood &mdash; then bind them into
+        one continuous lookbook.
+      </p>
+      <div class="intro__rule" aria-hidden="true"></div>
+    </header>
+
+    <section class="intro__drop" aria-label="Quick drop zone">
+      <div
+        id="globalDrop"
+        class="drop"
+        role="button"
+        tabindex="0"
+        aria-label="Drop photos to assign by capture date, or tap to choose files"
+      >
+        <div class="drop__inner">
+          <p class="drop__kicker">Drag &amp; drop anywhere</p>
+          <p class="drop__line">or <span class="drop__cta">tap to choose photos</span></p>
+          <p class="drop__hint">
+            We'll auto-sort by month using the file's date when we can.
+          </p>
+        </div>
+        <input
+          type="file"
+          id="globalInput"
+          accept="image/*"
+          multiple
+          hidden
+        />
+      </div>
+    </section>
+
+    <section class="intro__months" aria-label="Add photos per month">
+      <div class="intro__sectionhead">
+        <span class="intro__chapter">II</span>
+        <h2 class="intro__h2">Twelve chapters</h2>
+        <p class="intro__sub">
+          Add as many or as few months as you like. Empty months are skipped.
+        </p>
+      </div>
+
+      <ol id="monthList" class="months" role="list">
+        <!-- month rows are injected by JS -->
+      </ol>
+    </section>
+
+    <footer class="intro__footer">
+      <div class="intro__counter" id="counter">
+        <span id="counterPhotos">0</span> photos &middot;
+        <span id="counterMonths">0</span> months
+      </div>
+      <button id="composeBtn" class="btn btn--primary" type="button" disabled>
+        Compose the album
+        <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+      </button>
+      <p class="intro__fine">
+        Everything happens on your device. No uploads, no accounts, no API keys.
+      </p>
+    </footer>
+  </main>
+
+  <!-- ============================================================ -->
+  <!--  ALBUM VIEW                                                  -->
+  <!-- ============================================================ -->
+  <main id="album" class="album" hidden aria-label="Your album">
+    <nav class="album__nav" aria-label="Album navigation">
+      <button id="backBtn" class="album__back" type="button">&larr; Edit</button>
+      <p class="album__brand">MoodAlbum</p>
+      <div class="album__progress" aria-hidden="true">
+        <span id="albumProgressFill" class="album__progressfill"></span>
+      </div>
+    </nav>
+
+    <section id="albumCover" class="cover">
+      <!-- cover injected by JS -->
+    </section>
+
+    <div id="albumChapters" class="chapters">
+      <!-- chapters injected by JS -->
+    </div>
+
+    <section class="colophon" aria-label="Colophon">
+      <div class="colophon__rule" aria-hidden="true"></div>
+      <p class="colophon__eyebrow">Colophon</p>
+      <p class="colophon__line">
+        Set in a rotating pairing of editorial serifs and grotesques. Mood
+        derived from the photographs themselves &mdash; warmth, light, and
+        saturation read pixel by pixel on this device.
+      </p>
+      <p class="colophon__line colophon__line--small">MoodAlbum &middot; printed in your browser</p>
+    </section>
+  </main>
+
+  <!-- Hidden working canvas for color analysis -->
+  <canvas id="workCanvas" width="80" height="80" hidden></canvas>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
