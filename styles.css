@@ -59,158 +59,47 @@ button { font: inherit; color: inherit; }
 ::selection { background: #14110f; color: #f6f3ee; }
 
 /* =============================================================
-   INTRO
+   INTRO — single-viewport asymmetric bento
    ============================================================= */
 
 .intro {
-  max-width: 720px;
+  min-height: 100dvh;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: var(--s-7) var(--edge) var(--s-9);
-}
-
-.intro__masthead {
-  text-align: center;
-  padding-top: env(safe-area-inset-top, 0);
-}
-
-.intro__rule {
-  height: 1px;
-  background: var(--rule);
-  width: 100%;
-  margin: var(--s-6) 0;
-  opacity: 0.85;
-}
-
-.intro__eyebrow {
-  font-family: var(--sans);
-  font-size: 11px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-  margin: 0 0 var(--s-5);
-}
-
-.intro__title {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-style: italic;
-  font-size: clamp(64px, 18vw, 132px);
-  line-height: 0.92;
-  letter-spacing: -0.02em;
-  margin: 0 0 var(--s-5);
-}
-
-.intro__lede {
-  max-width: 32rem;
-  margin: 0 auto;
-  font-size: 16px;
-  line-height: 1.6;
-  color: var(--ink-2);
-}
-
-/* Quick drop zone */
-.intro__drop {
-  margin-top: var(--s-8);
-}
-.drop {
-  width: 100%;
-  border: 1px solid var(--rule);
-  padding: var(--s-7) var(--s-5);
-  text-align: center;
-  cursor: pointer;
-  transition: background 200ms ease, border-color 200ms ease, transform 200ms ease;
-  background: transparent;
-}
-.drop:hover, .drop:focus-visible {
-  background: var(--paper-2);
-  outline: none;
-}
-.drop.is-drag {
-  background: var(--ink);
-  color: var(--paper);
-  border-color: var(--ink);
-}
-.drop__inner > * { margin: 0; }
-.drop__kicker {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: clamp(22px, 5vw, 30px);
-  line-height: 1.1;
-  margin-bottom: var(--s-3);
-}
-.drop__line {
-  font-size: 14px;
-  letter-spacing: 0.04em;
-  color: var(--ink-2);
-}
-.drop.is-drag .drop__line,
-.drop.is-drag .drop__hint {
-  color: var(--paper-2);
-}
-.drop__cta {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  font-weight: 500;
-}
-.drop__hint {
-  margin-top: var(--s-4);
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  color: var(--ink-mute);
-}
-
-/* Section heads */
-.intro__sectionhead {
-  margin: var(--s-9) 0 var(--s-5);
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: var(--s-5);
-  row-gap: var(--s-2);
-  align-items: baseline;
-}
-.intro__chapter {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 28px;
-  color: var(--ink);
-}
-.intro__h2 {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: clamp(28px, 6vw, 44px);
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-  margin: 0;
-}
-.intro__sub {
-  grid-column: 2 / 3;
-  margin: 0;
-  color: var(--ink-mute);
-  font-size: 14px;
-  max-width: 28rem;
+  padding:
+    max(16px, env(safe-area-inset-top, 16px))
+    clamp(14px, 3vw, 28px)
+    max(16px, env(safe-area-inset-bottom, 16px));
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.6vw, 16px);
 }
 
 /* =============================================================
-   BENTO month grid (intro)
+   BENTO month grid (intro) — asymmetric, single-viewport
    ============================================================= */
 
 .bento {
   list-style: none;
   margin: 0;
   padding: 0;
+  flex: 1 1 auto;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: minmax(108px, auto);
-  gap: 10px;
-  /* Mobile (3-col) layout */
+  grid-auto-rows: 1fr;
+  gap: clamp(8px, 1.6vw, 14px);
+  min-height: 0;
+  /* Mobile (3-col × 6-row) — text cell top-left, JAN as 2x2 hero, mixed */
   grid-template-areas:
-    "jan jan feb"
-    "jan jan mar"
-    "apr may jun"
-    "jul aug aug"
-    "sep oct nov"
-    "sep dec dec";
+    "text feb feb"
+    "jan  jan  mar"
+    "jan  jan  apr"
+    "may  jun  jun"
+    "jul  aug  sep"
+    "oct  nov  dec";
 }
+
+/* Direct children of .bento become grid items via grid-area assignments */
 
 .bento__card {
   /* per-card theme via custom props (set inline by JS):
@@ -219,8 +108,8 @@ button { font: inherit; color: inherit; }
   isolation: isolate;
   border: 0;
   margin: 0;
-  padding: 14px;
-  border-radius: 18px;
+  padding: 0;
+  border-radius: clamp(16px, 2vw, 26px);
   container-type: inline-size;
   container-name: bento;
   background: var(--card-bg, #f0ebe4);
@@ -229,14 +118,14 @@ button { font: inherit; color: inherit; }
   text-align: left;
   cursor: pointer;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 108px;
+  display: block;
   transition: transform 220ms cubic-bezier(.2,.7,.2,1),
               box-shadow 220ms ease,
               filter 220ms ease;
   -webkit-tap-highlight-color: transparent;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
 }
 
 /* Subtle inner ring instead of a heavy border */
@@ -266,62 +155,26 @@ button { font: inherit; color: inherit; }
   filter: brightness(1.04);
 }
 
-/* --- corners + content --- */
-
-.bento__head {
-  position: relative;
+/* Minimal corner abbreviation — the only text on a month card */
+.bento__abbr {
+  position: absolute;
+  top: clamp(10px, 1.4vw, 16px);
+  left: clamp(10px, 1.4vw, 16px);
   z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 10px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  font-weight: 500;
-  opacity: 0.78;
-}
-.bento__plus {
-  width: 22px; height: 22px;
-  display: grid; place-items: center;
-  border-radius: 999px;
-  background: var(--card-accent, currentColor);
-  color: var(--card-bg, #fff);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1;
-  flex: 0 0 auto;
-  transition: transform 220ms ease;
-}
-.bento__card:hover .bento__plus { transform: rotate(90deg); }
-
-.bento__body {
-  position: relative;
-  z-index: 3;
-}
-.bento__name {
-  display: block;
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 400;
-  font-size: 20px;
-  line-height: 0.96;
-  letter-spacing: -0.015em;
-  margin: 0;
-}
-/* Container queries scale the month name to fit the card's actual width,
-   so the same rules look right on mobile (3 cols) and desktop (6 cols). */
-@container bento (min-width: 150px) { .bento__name { font-size: 26px; } }
-@container bento (min-width: 200px) { .bento__name { font-size: 34px; } }
-@container bento (min-width: 260px) { .bento__name { font-size: 44px; } }
-@container bento (min-width: 340px) { .bento__name { font-size: 56px; } }
-@container bento (min-width: 420px) { .bento__name { font-size: 72px; } }
-.bento__count {
-  display: block;
-  margin-top: 4px;
+  font-family: var(--sans);
   font-size: 11px;
-  letter-spacing: 0.04em;
-  font-weight: 500;
-  opacity: 0.72;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--card-fg, #1a1714);
+  opacity: 0.78;
+  pointer-events: none;
+  font-feature-settings: "tnum" 1;
+}
+.bento__card.has-photos .bento__abbr {
+  color: #fff;
+  opacity: 0.96;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.28);
 }
 
 /* Photo collage backgrounds */
@@ -375,7 +228,8 @@ button { font: inherit; color: inherit; }
 
 /* Size-class typography overrides apply only on desktop (see media query below) */
 
-/* Grid-area assignments per month */
+/* Grid-area assignments */
+.bento__text          { grid-area: text; }
 .bento__card--jan { grid-area: jan; }
 .bento__card--feb { grid-area: feb; }
 .bento__card--mar { grid-area: mar; }
@@ -388,6 +242,47 @@ button { font: inherit; color: inherit; }
 .bento__card--oct { grid-area: oct; }
 .bento__card--nov { grid-area: nov; }
 .bento__card--dec { grid-area: dec; }
+
+/* ---- Text-only top-left cell — blends with the page ---- */
+.bento__text {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: clamp(8px, 1.2vw, 14px) clamp(8px, 1.2vw, 14px) 8px;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--sans);
+}
+.bento__logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--ink);
+  display: inline-block;
+  flex: 0 0 auto;
+  position: relative;
+}
+.bento__logo::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+  bottom: -8px;
+  left: 38px;
+}
+.bento__line {
+  font-family: var(--sans);
+  font-size: clamp(12px, 1.05vw, 14px);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  max-width: 220px;
+}
+.bento__line span { display: block; font-weight: 400; color: var(--ink-mute); }
 
 /* Stagger reveal */
 @keyframes bentoIn {
@@ -411,42 +306,44 @@ button { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .bento__card { animation: none; }
 }
-.btn {
-  background: transparent;
-  border: 1px solid var(--rule);
-  color: var(--ink);
-  padding: 10px 16px;
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 160ms ease, color 160ms ease;
+/* ---- Compose bar at the bottom of the intro viewport ---- */
+.intro__bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px clamp(4px, 1vw, 8px) 0;
+  font-family: var(--sans);
 }
-.btn:hover { background: var(--ink); color: var(--paper); }
-.btn--ghost { border-color: rgba(26,23,20,0.3); }
-.btn--mini {
-  padding: 6px 10px;
+.intro__counter {
   font-size: 11px;
-  letter-spacing: 0.12em;
-}
-.btn--primary {
-  background: var(--ink);
-  color: var(--paper);
-  padding: 16px 22px;
   letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-weight: 500;
 }
-.btn--primary[disabled] {
-  opacity: 0.35;
-  cursor: not-allowed;
+.compose-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: var(--ink);
   color: var(--paper);
+  border: 0;
+  padding: 11px 16px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 200ms ease, opacity 200ms ease;
 }
-.btn__arrow {
-  display: inline-block;
-  margin-left: 10px;
-  transition: transform 200ms ease;
-}
-.btn--primary:not([disabled]):hover .btn__arrow { transform: translateX(4px); }
+.compose-btn[disabled] { opacity: 0.32; cursor: not-allowed; }
+.compose-btn:not([disabled]):hover { transform: translateY(-1px); }
+.compose-btn .btn__arrow { display: inline-block; transition: transform 200ms ease; }
+.compose-btn:not([disabled]):hover .btn__arrow { transform: translateX(3px); }
 
 /* Small "X" to clear a card's photos */
 .bento__clear {
@@ -475,27 +372,7 @@ button { font: inherit; color: inherit; }
   transform: scale(1);
 }
 
-/* Footer */
-.intro__footer {
-  margin-top: var(--s-9);
-  text-align: center;
-  display: grid;
-  gap: var(--s-4);
-  justify-items: center;
-}
-.intro__counter {
-  font-family: var(--sans);
-  font-size: 11px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
-.intro__fine {
-  margin: 0;
-  font-size: 12px;
-  color: var(--ink-mute);
-  max-width: 24rem;
-}
+/* (Old centered footer styles removed — replaced by .intro__bar) */
 
 /* =============================================================
    ALBUM (scrapbook calendar moodboards)
@@ -837,19 +714,16 @@ button { font: inherit; color: inherit; }
    Desktop refinements
    ============================================================= */
 @media (min-width: 720px) {
-  .intro { max-width: 980px; }
-
   .bento {
-    grid-template-columns: repeat(6, 1fr);
-    grid-auto-rows: minmax(132px, 1fr);
-    gap: 14px;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: 1fr;
+    gap: clamp(12px, 1.2vw, 18px);
     grid-template-areas:
-      "jan jan feb feb mar mar"
-      "jan jan apr may may jun"
-      "jul jul aug sep sep jun"
-      "oct nov nov dec dec dec";
+      "text feb feb apr mar"
+      "jan  jan oct may may"
+      "jan  jan jun jul jul"
+      "aug  sep nov dec dec";
   }
-  .bento__card { padding: 18px; min-height: 132px; }
 }
 
 @media (min-width: 720px) {

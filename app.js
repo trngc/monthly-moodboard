@@ -62,47 +62,49 @@ const MONTH_THEMES = [
 
 function renderMonths() {
   monthList.innerHTML = "";
+
+  // ---- Text-only top-left cell — direct grid item ----
+  const textCell = document.createElement("div");
+  textCell.className = "bento__text";
+  textCell.setAttribute("role", "listitem");
+  textCell.innerHTML = `
+    <span class="bento__logo" aria-hidden="true"></span>
+    <span class="bento__line">MoodAlbum<span>a year in photos.</span></span>
+  `;
+  monthList.appendChild(textCell);
+
+  // ---- 12 month cards ----
   state.months.forEach((m, idx) => {
     const short = MONTH_SHORT[idx];
-    const sizeClass = MONTH_SIZE[short];
     const t = MONTH_THEMES[idx];
-    const li = document.createElement("li");
-    li.style.display = "contents"; // pass through grid placement to the card
-    monthList.appendChild(li);
 
     const card = document.createElement("button");
     card.type = "button";
-    card.className = `bento__card bento__card--${short} bento__card--${sizeClass}`;
+    card.className = `bento__card bento__card--${short}`;
+    card.setAttribute("role", "listitem");
     card.dataset.month = idx;
     card.style.setProperty("--card-bg", t.bg);
     card.style.setProperty("--card-fg", t.fg);
     card.style.setProperty("--card-accent", t.accent);
-    card.setAttribute("aria-label", `${m.name}: ${m.photos.length} photo${m.photos.length === 1 ? "" : "s"}. Tap to add photos.`);
+    card.setAttribute(
+      "aria-label",
+      `${m.name}: ${m.photos.length} photo${m.photos.length === 1 ? "" : "s"}. Tap to add photos.`
+    );
 
     card.innerHTML = `
       <div class="bento__photos" data-photos="0"></div>
-      <div class="bento__head">
-        <span>${String(idx + 1).padStart(2, "0")} &middot; ${short.toUpperCase()}</span>
-        <span class="bento__plus" aria-hidden="true">+</span>
-      </div>
-      <div class="bento__body">
-        <span class="bento__name">${m.name}</span>
-        <span class="bento__count">${m.photos.length === 0 ? "Add photos" : `${m.photos.length} photo${m.photos.length === 1 ? "" : "s"}`}</span>
-      </div>
+      <span class="bento__abbr">${short.toUpperCase()}</span>
       <input type="file" accept="image/*" multiple hidden data-input="${idx}" />
       <button type="button" class="bento__clear" aria-label="Clear ${m.name}" tabindex="-1">&times;</button>
     `;
+    monthList.appendChild(card);
 
-    li.appendChild(card);
-
-    // Update photos collage
     paintBentoPhotos(card, m.photos);
     card.classList.toggle("has-photos", m.photos.length > 0);
 
     const input = card.querySelector(`[data-input="${idx}"]`);
     const clearBtn = card.querySelector(".bento__clear");
 
-    // Tap card → open file picker (skip if click came from the clear button)
     card.addEventListener("click", (e) => {
       if (e.target.closest(".bento__clear")) return;
       input.click();
@@ -117,11 +119,9 @@ function renderMonths() {
       e.preventDefault();
       state.months[idx].photos.forEach((p) => URL.revokeObjectURL(p.url));
       state.months[idx].photos = [];
-      // Clear cached analysis too so re-uploaded photos re-analyze cleanly
       renderMonths();
     });
 
-    // Drop directly on the card → push into this month
     card.addEventListener("dragenter", (e) => { e.preventDefault(); card.classList.add("is-drag"); });
     card.addEventListener("dragover", (e) => { e.preventDefault(); });
     card.addEventListener("dragleave", (e) => {
