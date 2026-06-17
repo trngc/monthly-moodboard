@@ -28,9 +28,8 @@ const composeBtn = $("#composeBtn");
 const counterPhotos = $("#counterPhotos");
 const counterMonths = $("#counterMonths");
 const backBtn = $("#backBtn");
-const albumCover = $("#albumCover");
-const albumChapters = $("#albumChapters");
-const albumProgressFill = $("#albumProgressFill");
+const boardsEl = $("#boards");
+const albumYearEl = $("#albumYear");
 
 /* =============================================================
    Intro: render month rows
@@ -467,11 +466,7 @@ backBtn.addEventListener("click", () => {
   introEl.hidden = false;
   window.scrollTo({ top: 0, behavior: "instant" });
   revealIO?.disconnect();
-  window.removeEventListener("scroll", onScroll);
-  parallaxNodes = [];
-  albumChapters.innerHTML = "";
-  albumCover.innerHTML = "";
-  albumCover.style.backgroundImage = "";
+  boardsEl.innerHTML = "";
 });
 
 async function composeAlbum() {
@@ -481,7 +476,6 @@ async function composeAlbum() {
   composeBtn.disabled = true;
   composeBtn.querySelector(".btn__arrow").textContent = "…";
 
-  // Analyze every photo that hasn't been analyzed yet
   for (const month of filled) {
     for (const p of month.photos) {
       if (!p.analysis) {
@@ -494,131 +488,486 @@ async function composeAlbum() {
     month.theme = buildTheme(month.agg, month.mood);
   }
 
-  renderAlbum(filled);
+  state.year = +inferYearLabel(filled);
+  albumYearEl.textContent = state.year;
 
-  // Show album
+  renderBoards(filled);
+
   introEl.hidden = true;
   albumEl.hidden = false;
   window.scrollTo({ top: 0, behavior: "instant" });
 
-  // Hook up scroll effects after layout settles
   requestAnimationFrame(() => requestAnimationFrame(initScrollEffects));
 
   composeBtn.disabled = false;
   composeBtn.querySelector(".btn__arrow").textContent = "→";
 }
 
-function renderAlbum(filled) {
-  // ---- Cover ----
-  // Take a unified palette from across all months (top color of each month)
-  const coverPalette = filled.map((m) => m.theme.accent).slice(0, 8);
-  const coverGrad = `
-    linear-gradient(180deg,
-      rgba(20,17,15,0) 0%,
-      rgba(20,17,15,0.05) 60%,
-      rgba(20,17,15,0.12) 100%),
-    linear-gradient(135deg,
-      ${filled[0].theme.accent}22 0%,
-      ${filled[Math.floor(filled.length/2)].theme.accent}1a 50%,
-      ${filled[filled.length-1].theme.accent}22 100%)
-  `;
-  const totalPhotos = filled.reduce((s, m) => s + m.photos.length, 0);
-  const yearLabel = inferYearLabel(filled);
+/* =============================================================
+   Scrapbook moodboard rendering
+   ============================================================= */
 
-  albumCover.style.backgroundImage = coverGrad;
-  albumCover.innerHTML = `
-    <p class="cover__pretitle reveal">An album in ${filled.length} chapter${filled.length === 1 ? "" : "s"}</p>
-    <div>
-      <h1 class="cover__title reveal reveal--slow">${yearLabel}</h1>
-      <p class="cover__sub reveal reveal--late">
-        A year read through its own light. Each month is themed only by the
-        photographs inside it &mdash; the warmth in their corners, the cool
-        in their shadows, the colors most repeated across the roll.
-      </p>
-      <div class="cover__swatches reveal reveal--later" aria-hidden="true">
-        ${coverPalette.map((c) => `<span class="cover__swatch" style="background:${c}"></span>`).join("")}
-      </div>
-    </div>
-    <dl class="cover__meta reveal reveal--later">
-      <div class="cover__metaitem"><dt>Chapters</dt><dd>${String(filled.length).padStart(2,"0")}</dd></div>
-      <div class="cover__metaitem"><dt>Frames</dt><dd>${totalPhotos}</dd></div>
-      <div class="cover__metaitem"><dt>Edition</dt><dd>I &middot; of one</dd></div>
-    </dl>
-  `;
+// Per-mood vocabularies for stickers, free notes, and date events
+const MOOD_DECOR = {
+  "warm-golden": {
+    stickers: ["☀️", "🌻", "🍊", "🥭", "🌅", "✨", "🐚", "🍯"],
+    scribbles: ["golden hour", "sun day", "honey light", "endless"],
+    events:    ["beach", "sunset", "patio", "drinks", "trip", "walk"],
+  },
+  "moody-editorial": {
+    stickers: ["🖤", "📷", "🌙", "✒️", "☕", "🎞️", "♣"],
+    scribbles: ["lights low", "ink + film", "after hours", "tone study"],
+    events:    ["studio", "shoot", "edit", "late", "review"],
+  },
+  "cool-minimal": {
+    stickers: ["❄️", "🪞", "🩵", "✦", "🌫️", "🪟", "💧"],
+    scribbles: ["clean light", "white noise", "off-grid", "snow day"],
+    events:    ["walk", "swim", "flight", "deep", "off"],
+  },
+  "soft-dreamy": {
+    stickers: ["🌸", "🎀", "🪷", "☁️", "🌷", "💌", "🩰", "🍡"],
+    scribbles: ["dolce vita", "soft mood", "love letter", "soft pink"],
+    events:    ["picnic", "tea", "garden", "date", "letter", "matinee"],
+  },
+  "bold-vivid": {
+    stickers: ["🍒", "💥", "⚡", "🎯", "🌶️", "🌈", "🎨"],
+    scribbles: ["loud day", "neon", "max color", "saturate", "yes!!"],
+    events:    ["show", "party", "race", "launch", "demo", "open"],
+  },
+  "earthy-natural": {
+    stickers: ["🌿", "🍄", "🪵", "🌾", "🪶", "🍂", "🌰", "🐚"],
+    scribbles: ["stone & linen", "in the woods", "slow morning", "tea time"],
+    events:    ["hike", "market", "trail", "pottery", "tea", "soup"],
+  },
+  "crisp-bright": {
+    stickers: ["🍋", "⭐", "💎", "🦢", "✩", "🥶"],
+    scribbles: ["icy walk", "fresh air", "early light", "lemon mood"],
+    events:    ["run", "swim", "ski", "fresh", "early", "open"],
+  },
+  "twilight-smoke": {
+    stickers: ["🌑", "🥀", "☁", "⌛", "🔮", "🕯️", "🌫️"],
+    scribbles: ["after dusk", "blue hour", "in transit", "nightfall"],
+    events:    ["red-eye", "drive", "blue hr", "drinks", "show", "late"],
+  },
+};
 
-  // ---- Chapters ----
-  albumChapters.innerHTML = "";
-  filled.forEach((month, i) => {
-    const sec = document.createElement("section");
-    sec.className = "chapter";
-    const t = month.theme;
-    sec.style.setProperty("--bg", t.bg);
-    sec.style.setProperty("--grad", t.grad);
-    sec.style.setProperty("--fg", t.fg);
-    sec.style.setProperty("--fg-mute", t.fgMute);
-    sec.style.setProperty("--accent", t.accent);
-    sec.style.setProperty("--c-serif", t.serif);
-    sec.style.setProperty("--c-sans", t.sans);
-    if (i > 0) sec.style.setProperty("--prevBg", filled[i-1].theme.bg);
+function rngFromSeed(seed) {
+  // mulberry32
+  let s = (seed | 0) || 1;
+  return function rng() {
+    let t = (s += 0x6D2B79F5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
-    const photos = month.photos;
-    const hero = photos[0];
-    const rest = photos.slice(1);
+function pick(arr, rng) { return arr[Math.floor(rng() * arr.length)]; }
+function pickN(arr, n, rng) {
+  const copy = [...arr];
+  const out = [];
+  while (out.length < n && copy.length) {
+    const i = Math.floor(rng() * copy.length);
+    out.push(copy.splice(i, 1)[0]);
+  }
+  return out;
+}
 
-    const palette = month.agg.palette.slice(0, 6).map((rgb) => rgbToHex(...rgb));
-    const stats = month.agg;
-    const warmth = labelWarm(stats.warm);
-    const lightLabel = labelLight(stats.light);
-    const satLabel = labelSat(stats.sat);
-
-    sec.innerHTML = `
-      <header class="chapter__head">
-        <p class="chapter__index reveal">Chapter ${String(i + 1).padStart(2, "0")} &middot; ${String(MONTHS.indexOf(month.name)+1).padStart(2,"0")}/12</p>
-        <h2 class="chapter__title reveal reveal--slow">${month.name}</h2>
-        <p class="chapter__mood reveal reveal--late">${month.mood.label}</p>
-        <div class="chapter__rule reveal reveal--late" aria-hidden="true"></div>
-      </header>
-
-      <figure class="chapter__hero reveal reveal--slow" data-parallax>
-        <img src="${hero.url}" alt="" loading="lazy" />
-      </figure>
-
-      <div class="chapter__caption reveal">
-        <span>${month.name} &middot; ${photos.length} frame${photos.length === 1 ? "" : "s"}</span>
-        <span>${month.mood.label}</span>
-      </div>
-
-      ${rest.length ? `
-        <div class="chapter__grid">
-          ${rest.map((p) => `
-            <figure class="reveal">
-              <img src="${p.url}" alt="" loading="lazy" />
-            </figure>
-          `).join("")}
-        </div>
-      ` : ""}
-
-      <blockquote class="chapter__quote reveal reveal--late">
-        &ldquo;${month.mood.quote}&rdquo;
-      </blockquote>
-
-      <div class="chapter__stats reveal">
-        <div>Warmth<strong>${warmth}</strong></div>
-        <div>Light<strong>${lightLabel}</strong></div>
-        <div>Saturation<strong>${satLabel}</strong></div>
-      </div>
-
-      <div class="chapter__palette reveal" aria-label="Palette">
-        ${palette.map((c) => `<span style="background:${c}"></span>`).join("")}
-      </div>
-    `;
-
-    albumChapters.appendChild(sec);
+function renderBoards(filled) {
+  boardsEl.innerHTML = "";
+  filled.forEach((month, idx) => {
+    const board = buildBoard(month, idx, filled.length);
+    boardsEl.appendChild(board);
+  });
+  // After layout, place decorations using actual cell positions
+  requestAnimationFrame(() => {
+    boardsEl.querySelectorAll(".board").forEach((b) => decorateBoard(b));
   });
 }
 
+function buildBoard(month, idx, total) {
+  const sec = document.createElement("section");
+  sec.className = "board reveal";
+  sec.dataset.monthIdx = MONTHS.indexOf(month.name);
+  const t = month.theme;
+  sec.style.setProperty("--bg", t.bg);
+  sec.style.setProperty("--grad", t.grad);
+  sec.style.setProperty("--accent", t.accent);
+  sec.style.setProperty("--accent2", t.accent2);
+
+  const monthIdx = MONTHS.indexOf(month.name);
+  const year = state.year;
+  const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+  // Mon = 0 ... Sun = 6
+  const firstDay = (new Date(year, monthIdx, 1).getDay() + 6) % 7;
+
+  const moodKey = month.mood.id;
+  const decor = MOOD_DECOR[moodKey] || MOOD_DECOR["warm-golden"];
+
+  // Seeded RNG so re-renders are stable per month
+  const rng = rngFromSeed(monthIdx * 1009 + (year % 100) * 31 + 7);
+
+  // Pick which dates get hand-written event labels
+  const eventCount = Math.min(daysInMonth, 4 + Math.floor(rng() * 3)); // 4–6
+  const eventDates = pickN(
+    Array.from({ length: daysInMonth }, (_, i) => i + 1),
+    eventCount,
+    rng,
+  );
+  const events = eventDates.map((d) => ({ d, text: pick(decor.events, rng) }));
+
+  // Pick which dates get a hand-drawn circle
+  const circleDates = pickN(
+    Array.from({ length: daysInMonth }, (_, i) => i + 1),
+    1 + Math.floor(rng() * 3), // 1-3
+    rng,
+  );
+
+  // Build calendar grid HTML
+  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+  const cellsHtml = [];
+  for (let i = 0; i < totalCells; i++) {
+    const dayNum = i - firstDay + 1;
+    const blank = dayNum < 1 || dayNum > daysInMonth;
+    const ev = events.find((e) => e.d === dayNum);
+    const circled = circleDates.includes(dayNum);
+    cellsHtml.push(`
+      <div class="cal__cell ${blank ? "cal__cell--blank" : ""}" data-day="${blank ? "" : dayNum}">
+        ${blank ? "" : `<span class="cal__num">${dayNum}</span>`}
+        ${ev ? `<span class="cal__note">${escapeHtml(ev.text)}</span>` : ""}
+        ${circled ? handCircleSVG(rng, t.accent) : ""}
+      </div>
+    `);
+  }
+
+  sec.innerHTML = `
+    <div class="board__head">
+      <span class="board__chapter">${String(idx + 1).padStart(2, "0")} / ${String(total).padStart(2, "0")}</span>
+      <span class="board__head-spacer"></span>
+      <button class="board__export" type="button" data-export>Save PNG</button>
+    </div>
+
+    <div class="board__capture" data-capture>
+      <div class="paper">
+        <div class="paper__top">
+          <span class="paper__icon" aria-hidden="true">‹</span>
+          <span class="paper__crumb">${year}</span>
+          <span class="paper__top-spacer"></span>
+          <span class="paper__icon" aria-hidden="true">▤</span>
+          <span class="paper__icon" aria-hidden="true">⌕</span>
+          <span class="paper__icon" aria-hidden="true">+</span>
+        </div>
+        <h2 class="paper__title">${month.name} <em>moodboard</em></h2>
+        <p class="paper__mood">${month.mood.label.toLowerCase()}</p>
+
+        <div class="cal" data-cal>
+          <div class="cal__weekdays">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+          <div class="cal__grid">
+            ${cellsHtml.join("")}
+          </div>
+        </div>
+      </div>
+
+      <div class="board__decor" data-decor></div>
+    </div>
+  `;
+
+  // Wire up export button
+  const exportBtn = sec.querySelector("[data-export]");
+  exportBtn.addEventListener("click", () => exportBoardAsPNG(sec, month));
+
+  // Stash data for decorate pass
+  sec.__decorData = { month, decor, rng, monthIdx, year };
+
+  return sec;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+/* ---- Decoration placement (post-layout, uses real cell rects) ---- */
+
+function decorateBoard(boardEl) {
+  const data = boardEl.__decorData;
+  if (!data) return;
+  const { month, decor, monthIdx, year } = data;
+  const rng = rngFromSeed(monthIdx * 9013 + (year % 100) * 41 + 19);
+
+  const capture = boardEl.querySelector("[data-capture]");
+  const decorEl = boardEl.querySelector("[data-decor]");
+  decorEl.innerHTML = "";
+
+  const capRect = capture.getBoundingClientRect();
+  const W = capRect.width;
+  const H = Math.max(capRect.height, capture.offsetHeight);
+
+  // Reference rects (relative to capture origin)
+  const localRect = (sel) => {
+    const el = boardEl.querySelector(sel);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { x: r.left - capRect.left, y: r.top - capRect.top, w: r.width, h: r.height };
+  };
+  const paperRect = localRect(".paper");
+  const titleRect = localRect(".paper__title");
+  const moodRect = localRect(".paper__mood");
+  const wkRect = localRect(".cal__weekdays");
+  const gridRect = localRect(".cal__grid");
+
+  // Forbidden zone for stickers: from paper top through the weekday header,
+  // so emoji never lands on the title, mood subtitle, or weekday labels.
+  const titleZone = (paperRect && wkRect)
+    ? {
+        x: paperRect.x - 8,
+        y: paperRect.y,
+        w: paperRect.w + 16,
+        h: (wkRect.y + wkRect.h) - paperRect.y + 4,
+      }
+    : null;
+
+  // Polaroid top must clear the weekday row
+  const minPolaroidY = wkRect ? wkRect.y + wkRect.h + 4 : 140;
+  // Polaroid bottom must stay within capture (or extend slightly past)
+  const maxPolaroidBottom = H - 10;
+
+  // ---- Polaroids ----
+  const cells = [...boardEl.querySelectorAll(".cal__cell:not(.cal__cell--blank)")];
+  const cellRects = cells.map((c) => {
+    const r = c.getBoundingClientRect();
+    return { x: r.left - capRect.left, y: r.top - capRect.top, w: r.width, h: r.height };
+  });
+  const order = [...cellRects.keys()];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+
+  const placed = [];
+  const photos = month.photos;
+
+  // Smaller polaroids when there are many photos
+  const photoCount = photos.length;
+  const widthScale = photoCount >= 8 ? 0.22 : photoCount >= 5 ? 0.26 : 0.30;
+  const baseW = Math.max(80, Math.min(130, W * widthScale));
+
+  // Caption queue: alternate between event vocab and "mmm dd" labels, all distinct
+  const eventPool = [...decor.events];
+  const eventQueue = [];
+  while (eventPool.length) eventQueue.push(eventPool.splice(Math.floor(rng() * eventPool.length), 1)[0]);
+
+  photos.forEach((photo, i) => {
+    let chosenRect = null;
+    for (let attempt = 0; attempt < Math.min(10, order.length); attempt++) {
+      const idx = order[(i * 7 + attempt) % order.length];
+      const cr = cellRects[idx];
+      if (!cr) continue;
+      const sizeJitter = 0.9 + rng() * 0.22;
+      const w = baseW * sizeJitter;
+      const h = w * 1.18;
+      const cx = cr.x + cr.w / 2 + (rng() - 0.5) * cr.w * 0.5;
+      const cy = cr.y + cr.h / 2 + (rng() - 0.5) * cr.h * 0.4;
+      let rx = cx - w/2;
+      let ry = cy - h/2;
+      // Clamp so polaroid does not cover the weekday header or month title
+      ry = Math.max(minPolaroidY, ry);
+      ry = Math.min(maxPolaroidBottom - h, ry);
+      // Keep mostly within capture horizontally (allow ~15% overflow)
+      rx = Math.max(-w * 0.15, Math.min(W - w * 0.85, rx));
+      const rect = { x: rx, y: ry, w, h };
+      let overlap = 0;
+      for (const p of placed) overlap += rectOverlap(rect, p);
+      if (chosenRect == null || overlap < chosenRect._overlap) {
+        chosenRect = { ...rect, _overlap: overlap };
+      }
+      if (overlap === 0) break;
+    }
+    if (!chosenRect) return;
+    placed.push(chosenRect);
+
+    const tilt = (rng() - 0.5) * 16; // -8..+8
+    const useDate = rng() < 0.45;
+    const day = 1 + Math.floor(rng() * 27);
+    const cap = useDate
+      ? `${month.name.slice(0, 3).toLowerCase()} ${day}`
+      : (eventQueue[i % eventQueue.length] || pick(decor.events, rng));
+
+    const clipKind = ["top", "tl", "tr"][Math.floor(rng() * 3)];
+    const clipSVG = rng() < 0.55 ? paperclipSVG() : binderClipSVG();
+
+    const fig = document.createElement("figure");
+    fig.className = "polaroid";
+    fig.style.left = `${chosenRect.x}px`;
+    fig.style.top  = `${chosenRect.y}px`;
+    fig.style.width  = `${chosenRect.w}px`;
+    fig.style.transform = `rotate(${tilt.toFixed(2)}deg)`;
+    fig.style.zIndex = 10 + i;
+    const photoH = chosenRect.h - 36;
+    fig.innerHTML = `
+      <span class="clip clip--${clipKind}">${clipSVG}</span>
+      <img src="${photo.url}" alt="" style="height:${photoH}px" />
+      <figcaption>${escapeHtml(cap)}</figcaption>
+    `;
+    decorEl.appendChild(fig);
+  });
+
+  // ---- Stickers ----
+  // Pick distinct emoji where possible
+  const stickerPool = [...decor.stickers];
+  for (let i = stickerPool.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [stickerPool[i], stickerPool[j]] = [stickerPool[j], stickerPool[i]];
+  }
+  const stickerCount = Math.min(stickerPool.length, 6 + Math.floor(rng() * 3));
+  let placedStickers = 0;
+  for (let attempts = 0; attempts < stickerCount * 5 && placedStickers < stickerCount; attempts++) {
+    const emoji = stickerPool[placedStickers % stickerPool.length];
+    const size = 22 + Math.floor(rng() * 14);
+    const x = -8 + rng() * (W - size + 16);
+    // Allow stickers anywhere from the date-grid area downwards
+    const stickerYStart = (gridRect ? gridRect.y : 140);
+    const yMax = H - size - 8;
+    const y = stickerYStart + rng() * (yMax - stickerYStart);
+    const sx = x, sy = y, sw = size, sh = size;
+    if (titleZone && rectOverlap({x:sx,y:sy,w:sw,h:sh}, titleZone) > 0) continue;
+    // Discourage overlap with already-placed polaroids (allow some)
+    let polOverlap = 0;
+    for (const p of placed) polOverlap += rectOverlap({x:sx,y:sy,w:sw,h:sh}, p);
+    if (polOverlap > sw * sh * 0.4) continue;
+    const tilt = (rng() - 0.5) * 30;
+    const span = document.createElement("span");
+    span.className = "sticker";
+    span.textContent = emoji;
+    span.style.left = `${sx}px`;
+    span.style.top  = `${sy}px`;
+    span.style.fontSize = `${size}px`;
+    span.style.transform = `rotate(${tilt.toFixed(1)}deg)`;
+    span.style.zIndex = 6;
+    decorEl.appendChild(span);
+    placedStickers++;
+  }
+
+  // ---- Free handwritten scribbles (distinct text + distinct slots) ----
+  const scribbleCount = 1 + Math.floor(rng() * 2);
+  const scribbleTexts = pickN(decor.scribbles, Math.min(scribbleCount, decor.scribbles.length), rng);
+  const baseY = paperRect ? paperRect.y + paperRect.h + 12 : H - 110;
+  const slotW = (W - 32) / Math.max(1, scribbleTexts.length);
+  scribbleTexts.forEach((text, i) => {
+    const x = 16 + i * slotW + rng() * (slotW * 0.35);
+    const y = baseY + (i % 2) * 26 + rng() * 16;
+    const tilt = (rng() - 0.5) * 14;
+    const el = document.createElement("p");
+    el.className = "scribble " + (rng() < 0.5 ? "scribble--accent" : "");
+    el.textContent = text;
+    el.style.left = `${x}px`;
+    el.style.top  = `${y}px`;
+    el.style.transform = `rotate(${tilt.toFixed(1)}deg)`;
+    el.style.zIndex = 7;
+    decorEl.appendChild(el);
+  });
+}
+
+function rectOverlap(a, b) {
+  const x = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
+  const y = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+  return x * y;
+}
+
+/* ---- Hand-drawn circle around a date (SVG, double-stroked) ---- */
+function handCircleSVG(rng, color) {
+  const w = 36, h = 32;
+  const cx = w/2, cy = h/2;
+  const rx = 13 + rng() * 2;
+  const ry = 11 + rng() * 2;
+  const r1 = (rng() - 0.5) * 10;
+  const r2 = (rng() - 0.5) * 8;
+  return `
+    <svg class="cal__circle" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+      <g transform="translate(${(rng()-0.5)*2} ${(rng()-0.5)*2})">
+        <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"
+          fill="none" stroke="${color}" stroke-width="1.6"
+          stroke-linecap="round" transform="rotate(${r1.toFixed(2)} ${cx} ${cy})"/>
+        <ellipse cx="${cx + (rng()-0.5)*1.4}" cy="${cy + (rng()-0.5)*1.2}"
+          rx="${(rx-0.7).toFixed(2)}" ry="${(ry-0.6).toFixed(2)}"
+          fill="none" stroke="${color}" stroke-width="1.2" opacity="0.55"
+          stroke-linecap="round" transform="rotate(${r2.toFixed(2)} ${cx} ${cy})"/>
+      </g>
+    </svg>
+  `;
+}
+
+/* ---- SVG clip glyphs ---- */
+function paperclipSVG() {
+  return `
+    <svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true">
+      <path d="M9 4 v16 a4 4 0 0 0 8 0 v-13 a3 3 0 0 0 -6 0 v11 a2 2 0 0 0 4 0 v-9"
+        fill="none" stroke="#a9a9a9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
+}
+function binderClipSVG() {
+  return `
+    <svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true">
+      <rect x="6" y="9" width="16" height="11" rx="1.2" fill="#1a1714" />
+      <rect x="9" y="11" width="10" height="2" fill="#3b3733" />
+      <path d="M9 9 l2 -4 h6 l2 4" fill="none" stroke="#1a1714" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+  `;
+}
+
+/* =============================================================
+   PNG export — html2canvas
+   ============================================================= */
+
+async function exportBoardAsPNG(boardEl, month) {
+  const node = boardEl.querySelector("[data-capture]");
+  const btn = boardEl.querySelector("[data-export]");
+  if (!node || !window.html2canvas) {
+    alert("Export library is still loading. Try again in a moment.");
+    return;
+  }
+  const orig = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Saving…";
+
+  try {
+    const canvas = await window.html2canvas(node, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: null,
+      logging: false,
+      // Ensure web fonts already loaded in this document are honored
+      onclone: (cloneDoc) => {
+        // Belt-and-braces: re-link the original Google Fonts stylesheet inside the clone
+        const orig = document.querySelector('link[href*="fonts.googleapis.com"]');
+        if (orig && !cloneDoc.querySelector('link[href*="fonts.googleapis.com"]')) {
+          const l = cloneDoc.createElement("link");
+          l.rel = "stylesheet";
+          l.href = orig.href;
+          cloneDoc.head.appendChild(l);
+        }
+      },
+    });
+    const dataUrl = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    const safeMood = month.mood.id.replace(/[^a-z0-9]+/gi, "-");
+    a.download = `moodalbum-${month.name.toLowerCase()}-${safeMood}.png`;
+    a.href = dataUrl;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch (e) {
+    console.error("PNG export failed:", e);
+    alert("Sorry, couldn't render that board to PNG. Check the console for details.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = orig;
+  }
+}
+
 function inferYearLabel(filled) {
-  // Use the most common year from photo lastModified, otherwise current
   const years = {};
   filled.forEach((m) => m.photos.forEach((p) => {
     const d = p.file.lastModified ? new Date(p.file.lastModified) : null;
@@ -634,32 +983,13 @@ function inferYearLabel(filled) {
   return String(bestY);
 }
 
-function labelWarm(v) {
-  if (v > 0.66) return "Warm";
-  if (v < 0.42) return "Cool";
-  return "Neutral";
-}
-function labelLight(v) {
-  if (v > 0.66) return "Bright";
-  if (v < 0.36) return "Dark";
-  return "Mid";
-}
-function labelSat(v) {
-  if (v > 0.55) return "Vivid";
-  if (v < 0.22) return "Muted";
-  return "Balanced";
-}
-
 /* =============================================================
-   Scroll effects: reveal, parallax, page-flip, progress
+   Scroll reveal (boards only)
    ============================================================= */
 
 let revealIO;
-let parallaxNodes = [];
-
 function initScrollEffects() {
   revealIO?.disconnect();
-
   revealIO = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
       if (e.isIntersecting) {
@@ -668,38 +998,7 @@ function initScrollEffects() {
       }
     });
   }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
-
   albumEl.querySelectorAll(".reveal").forEach((el) => revealIO.observe(el));
-
-  parallaxNodes = [...albumEl.querySelectorAll("[data-parallax] img")];
-  window.removeEventListener("scroll", onScroll);
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
-}
-
-let scrollTicking = false;
-function onScroll() {
-  if (scrollTicking) return;
-  scrollTicking = true;
-  requestAnimationFrame(() => {
-    // Parallax on hero images
-    const vh = window.innerHeight;
-    parallaxNodes.forEach((img) => {
-      const rect = img.parentElement.getBoundingClientRect();
-      if (rect.bottom < -100 || rect.top > vh + 100) return;
-      const center = rect.top + rect.height / 2;
-      const offset = (center - vh / 2) / vh; // -~1..~1
-      const ty = Math.max(-7, Math.min(7, offset * 6)); // %
-      img.style.transform = `translateY(${(-4 + ty).toFixed(2)}%)`;
-    });
-
-    // Progress bar
-    const total = (document.documentElement.scrollHeight - window.innerHeight) || 1;
-    const p = Math.max(0, Math.min(1, window.scrollY / total));
-    if (albumProgressFill) albumProgressFill.style.width = `${(p * 100).toFixed(1)}%`;
-
-    scrollTicking = false;
-  });
 }
 
 /* =============================================================

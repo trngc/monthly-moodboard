@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Serif+Display:ital@0;1&family=Italiana&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Libre+Caslon+Display&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&family=Space+Grotesk:wght@300;400;500&family=Manrope:wght@300;400;500&family=Work+Sans:wght@300;400;500&family=Archivo:wght@300;400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Serif+Display:ital@0;1&family=Italiana&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Libre+Caslon+Display&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;700&family=Manrope:wght@300;400;500;700&family=Work+Sans:wght@300;400;500;700&family=Archivo:wght@300;400;500;700&family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Shadows+Into+Light&display=swap"
   />
 
   <link rel="stylesheet" href="styles.css" />
@@ -88,39 +88,25 @@
   </main>
 
   <!-- ============================================================ -->
-  <!--  ALBUM VIEW                                                  -->
+  <!--  ALBUM VIEW (scrapbook moodboard calendars)                   -->
   <!-- ============================================================ -->
-  <main id="album" class="album" hidden aria-label="Your album">
+  <main id="album" class="album" hidden aria-label="Your moodboards">
     <nav class="album__nav" aria-label="Album navigation">
       <button id="backBtn" class="album__back" type="button">&larr; Edit</button>
       <p class="album__brand">MoodAlbum</p>
-      <div class="album__progress" aria-hidden="true">
-        <span id="albumProgressFill" class="album__progressfill"></span>
-      </div>
+      <span class="album__year" id="albumYear" aria-hidden="true"></span>
     </nav>
 
-    <section id="albumCover" class="cover">
-      <!-- cover injected by JS -->
-    </section>
-
-    <div id="albumChapters" class="chapters">
-      <!-- chapters injected by JS -->
+    <div id="boards" class="boards">
+      <!-- one .board per non-empty month, injected by JS -->
     </div>
-
-    <section class="colophon" aria-label="Colophon">
-      <div class="colophon__rule" aria-hidden="true"></div>
-      <p class="colophon__eyebrow">Colophon</p>
-      <p class="colophon__line">
-        Set in a rotating pairing of editorial serifs and grotesques. Mood
-        derived from the photographs themselves &mdash; warmth, light, and
-        saturation read pixel by pixel on this device.
-      </p>
-      <p class="colophon__line colophon__line--small">MoodAlbum &middot; printed in your browser</p>
-    </section>
   </main>
 
   <!-- Hidden working canvas for color analysis -->
   <canvas id="workCanvas" width="80" height="80" hidden></canvas>
+
+  <!-- html2canvas: client-side rasterizer used only for the "Save PNG" button -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 
   <script src="app.js" defer></script>
 </body>
