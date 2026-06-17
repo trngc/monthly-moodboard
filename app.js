@@ -94,6 +94,9 @@ function renderMonths() {
     card.innerHTML = `
       <div class="bento__photos" data-photos="0"></div>
       <span class="bento__abbr">${short.toUpperCase()}</span>
+      <span class="bento__add-icon" aria-hidden="true">+</span>
+      <span class="bento__add-label">Add photos</span>
+      <span class="bento__count-badge" aria-hidden="true">${m.photos.length}</span>
       <input type="file" accept="image/*" multiple hidden data-input="${idx}" />
       <button type="button" class="bento__clear" aria-label="Clear ${m.name}" tabindex="-1">&times;</button>
     `;

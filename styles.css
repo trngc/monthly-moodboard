@@ -128,20 +128,24 @@ button { font: inherit; color: inherit; }
   min-height: 0;
 }
 
-/* Subtle inner ring instead of a heavy border */
+/* Subtle inner ring + hover tint, single pseudo */
 .bento__card::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+  background: rgba(255,255,255,0);
   pointer-events: none;
-  z-index: 4;
+  z-index: 2;
+  transition: background 220ms ease;
 }
+.bento__card:hover::before { background: rgba(255,255,255,0.10); }
+.bento__card.has-photos:hover::before { background: rgba(0,0,0,0.10); }
 
 .bento__card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 18px 32px -16px rgba(0,0,0,0.22);
+  transform: translateY(-3px) scale(1.012);
+  box-shadow: 0 22px 34px -18px rgba(0,0,0,0.28);
   filter: saturate(1.04);
 }
 .bento__card:active { transform: translateY(0) scale(0.985); }
@@ -155,7 +159,7 @@ button { font: inherit; color: inherit; }
   filter: brightness(1.04);
 }
 
-/* Minimal corner abbreviation — the only text on a month card */
+/* Minimal corner abbreviation — top-left of every card */
 .bento__abbr {
   position: absolute;
   top: clamp(10px, 1.4vw, 16px);
@@ -176,6 +180,86 @@ button { font: inherit; color: inherit; }
   opacity: 0.96;
   text-shadow: 0 1px 2px rgba(0,0,0,0.28);
 }
+
+/* Top-right circular "+" affordance — present on every card */
+.bento__add-icon {
+  position: absolute;
+  top: clamp(8px, 1vw, 12px);
+  right: clamp(8px, 1vw, 12px);
+  z-index: 3;
+  width: clamp(24px, 2.4vw, 30px);
+  height: clamp(24px, 2.4vw, 30px);
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--card-fg, #1a1714);
+  color: var(--card-bg, #f5f3ee);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 0;
+  pointer-events: none;
+  opacity: 0.82;
+  transition: transform 220ms cubic-bezier(.2,.7,.2,1),
+              background 220ms ease,
+              opacity 220ms ease;
+}
+/* On filled cards the "+" flips to a light-on-photo style */
+.bento__card.has-photos .bento__add-icon {
+  background: rgba(255,255,255,0.94);
+  color: #1a1714;
+  opacity: 0.96;
+}
+.bento__card:hover .bento__add-icon {
+  opacity: 1;
+  transform: scale(1.12) rotate(90deg);
+}
+.bento__card:active .bento__add-icon { transform: scale(1.04) rotate(90deg); }
+
+/* Bottom-left "Add photos" label — empty cards only */
+.bento__add-label {
+  position: absolute;
+  bottom: clamp(10px, 1.4vw, 14px);
+  left: clamp(10px, 1.4vw, 14px);
+  z-index: 3;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  color: var(--card-fg, #1a1714);
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 220ms cubic-bezier(.2,.7,.2,1);
+}
+.bento__card:hover .bento__add-label {
+  opacity: 0.92;
+  transform: translateX(2px);
+}
+.bento__card.has-photos .bento__add-label { display: none; }
+
+/* Photo-count badge — filled cards only */
+.bento__count-badge {
+  position: absolute;
+  bottom: clamp(8px, 1vw, 12px);
+  right: clamp(8px, 1vw, 12px);
+  z-index: 3;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.96);
+  color: #1a1714;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-feature-settings: "tnum" 1;
+}
+.bento__card.has-photos .bento__count-badge { display: inline-flex; }
+
+/* (hover tint lives on .bento__card::before above) */
 
 /* Photo collage backgrounds */
 .bento__photos {
@@ -345,27 +429,28 @@ button { font: inherit; color: inherit; }
 .compose-btn .btn__arrow { display: inline-block; transition: transform 200ms ease; }
 .compose-btn:not([disabled]):hover .btn__arrow { transform: translateX(3px); }
 
-/* Small "X" to clear a card's photos */
+/* Small "×" to clear a card's photos — hover only on filled cards */
 .bento__clear {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  bottom: clamp(8px, 1vw, 12px);
+  left: clamp(8px, 1vw, 12px);
   z-index: 5;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
   border: 0;
-  background: rgba(255,255,255,0.95);
+  background: rgba(255,255,255,0.92);
   color: #1a1714;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1;
   cursor: pointer;
-  display: grid;
+  display: none;
   place-items: center;
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(0.88);
   transition: opacity 160ms ease, transform 160ms ease;
 }
+.bento__card.has-photos .bento__clear { display: grid; }
 .bento__card.has-photos:hover .bento__clear,
 .bento__card.has-photos:focus-within .bento__clear {
   opacity: 1;
