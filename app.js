@@ -43,61 +43,22 @@ const MONTH_SIZE = {
   jul: "wide",aug: "wide", sep: "lg",
   oct: "sm",  nov: "wide", dec: "wide",
 };
-// Refined muted editorial palette — wine, dusty blue, warm beige, brown,
-// cream — with two darks for rhythm. Each entry: card background, ink
-// foreground, and a subtle accent.
+// 12 hand-picked card themes — playful, varied, with a couple of dark
+// accents for visual rhythm. Background, text color, and accent dot.
 const MONTH_THEMES = [
-  { bg: "#1d1a17", fg: "#efe7d8", accent: "#7d6d57" }, // Jan — charcoal ink
-  { bg: "#d8b8b6", fg: "#3a1f1d", accent: "#7d2d2c" }, // Feb — dusty rose
-  { bg: "#b8c8d4", fg: "#1d2a36", accent: "#3a536c" }, // Mar — dusty blue
-  { bg: "#efe5d0", fg: "#3a2f24", accent: "#8a6f4f" }, // Apr — cream paper
-  { bg: "#a4b094", fg: "#1f2a1d", accent: "#5a6a4a" }, // May — sage muted
-  { bg: "#c4d2dc", fg: "#1d2a36", accent: "#3a536c" }, // Jun — pale blue
-  { bg: "#e8dcc4", fg: "#3a2f24", accent: "#a07a44" }, // Jul — warm beige
-  { bg: "#c2745a", fg: "#1d100c", accent: "#5e2f1e" }, // Aug — terracotta
-  { bg: "#c89856", fg: "#241a0e", accent: "#7d5b27" }, // Sep — muted gold
-  { bg: "#8a2c2e", fg: "#f0d9d0", accent: "#d6b0a4" }, // Oct — wine red
-  { bg: "#59413a", fg: "#ede1d3", accent: "#bda58a" }, // Nov — warm brown
-  { bg: "#34372e", fg: "#e3e0d4", accent: "#7d8772" }, // Dec — deep olive
+  { bg: "#0c1e3e", fg: "#f5f3ee", accent: "#5b91ff" }, // Jan — deep navy
+  { bg: "#fbe7eb", fg: "#1a1714", accent: "#e25677" }, // Feb — pale rose
+  { bg: "#dbf1bd", fg: "#1a1714", accent: "#5fa84a" }, // Mar — fresh lime
+  { bg: "#f0e5d2", fg: "#1a1714", accent: "#a8804a" }, // Apr — cream
+  { bg: "#ffd1be", fg: "#1a1714", accent: "#e8543b" }, // May — coral
+  { bg: "#bee3ff", fg: "#0a2540", accent: "#1a76d2" }, // Jun — sky
+  { bg: "#ffec5c", fg: "#1a1714", accent: "#c79100" }, // Jul — bright yellow
+  { bg: "#f1ead6", fg: "#1a1714", accent: "#9c7e34" }, // Aug — ivory
+  { bg: "#ff7d3b", fg: "#1a1714", accent: "#7a2c0a" }, // Sep — pumpkin
+  { bg: "#892029", fg: "#ffe9da", accent: "#ffb0a3" }, // Oct — maroon
+  { bg: "#ffd9b8", fg: "#1a1714", accent: "#c66e30" }, // Nov — peach
+  { bg: "#0d0d10", fg: "#f5f3ee", accent: "#9b9bb0" }, // Dec — black
 ];
-
-// Per-mood editorial vocabulary used by the bento label and the album page.
-const MOOD_VOICE = {
-  "warm-golden":     { caption: "GOLDEN HOURS",  accent: "warm hours" },
-  "moody-editorial": { caption: "TONE STUDY",    accent: "low light" },
-  "cool-minimal":    { caption: "QUIET LIGHT",   accent: "white space" },
-  "soft-dreamy":     { caption: "SOFT FOCUS",    accent: "soft hush" },
-  "bold-vivid":      { caption: "COLOR STORY",   accent: "loud color" },
-  "earthy-natural":  { caption: "FIELD NOTES",   accent: "linen days" },
-  "crisp-bright":    { caption: "BRIGHT SIDE",   accent: "fresh air" },
-  "twilight-smoke":  { caption: "BLUE HOUR",     accent: "after dusk" },
-};
-// Short editorial phrases used in postcard / pinned-note motifs.
-const MOOD_NOTES = {
-  "warm-golden":     ["wish you were here", "kept all the light", "long, slow afternoons"],
-  "moody-editorial": ["after the rain", "studio quiet", "the camera on the table"],
-  "cool-minimal":    ["clean morning", "open windows", "off the grid for a while"],
-  "soft-dreamy":     ["a soft week", "petals on the table", "we kept whispering"],
-  "bold-vivid":      ["all the saturation", "we wore color", "louder than expected"],
-  "earthy-natural":  ["bread, tea, a long walk", "in the garden again", "linen, stone, soft rain"],
-  "crisp-bright":    ["icy walks, hot coffee", "early light kept calling", "lemons in the bowl"],
-  "twilight-smoke":  ["the blue hour", "stayed up too late", "ash, smoke, soft thunder"],
-};
-// Per-mood "wishlist" rows for the wishlist motif card.
-const MOOD_WISHLIST = {
-  "warm-golden":     ["golden hour walk", "iced espresso", "linen shirt", "open windows"],
-  "moody-editorial": ["new film stock", "low desk light", "long lens", "single malt"],
-  "cool-minimal":    ["cold morning swim", "white linen", "open notebook", "early train"],
-  "soft-dreamy":     ["fresh peonies", "slow Sunday", "love letter", "honeyed milk"],
-  "bold-vivid":      ["red lipstick", "loud playlist", "matinee tickets", "neon sign"],
-  "earthy-natural":  ["rye bread", "wool blanket", "trail map", "iron kettle"],
-  "crisp-bright":    ["lemon water", "early run", "white sneakers", "iced citrus"],
-  "twilight-smoke":  ["taper candle", "dark vinyl", "amber perfume", "slow gin"],
-};
-
-// Seed photos: we look for /seed/<short>.jpg per month. Users can replace
-// any of these with their own photos by dropping files into /seed/.
-const SEED_BASE = "seed/";
 
 function renderMonths() {
   monthList.innerHTML = "";
@@ -130,14 +91,9 @@ function renderMonths() {
       `${m.name}: ${m.photos.length} photo${m.photos.length === 1 ? "" : "s"}. Tap to add photos.`
     );
 
-    // Editorial caption — uses the mood voice once analysis is ready, falls
-    // back to the month name on first paint while seeds are still loading.
-    const moodKey = m.mood?.id || null;
-    const caption = (moodKey && MOOD_VOICE[moodKey]?.caption) || m.name.toUpperCase();
     card.innerHTML = `
       <div class="bento__photos" data-photos="0"></div>
       <span class="bento__abbr">${short.toUpperCase()}</span>
-      <span class="bento__caption">${escapeHtml(caption)}</span>
       <span class="bento__add-icon" aria-hidden="true">+</span>
       <span class="bento__add-label">Add photos</span>
       <span class="bento__count-badge" aria-hidden="true">${m.photos.length}</span>
@@ -683,46 +639,66 @@ function renderBoards(filled) {
     const board = buildBoard(month, idx, filled.length);
     boardsEl.appendChild(board);
   });
+  // After layout, place decorations using actual cell positions
+  requestAnimationFrame(() => {
+    boardsEl.querySelectorAll(".board").forEach((b) => decorateBoard(b));
+  });
 }
 
 function buildBoard(month, idx, total) {
   const sec = document.createElement("section");
   sec.className = "board reveal";
   sec.dataset.monthIdx = MONTHS.indexOf(month.name);
-
   const t = month.theme;
-  // Theme custom properties for the editorial page styling.
-  sec.style.setProperty("--bg",       t.bg);
-  sec.style.setProperty("--ink",      t.fg);
-  sec.style.setProperty("--accent",   t.accent);
-  sec.style.setProperty("--accent-2", t.accent2 || t.accent);
-  sec.style.setProperty("--c-serif",  t.serif);
-  sec.style.setProperty("--c-sans",   t.sans);
+  sec.style.setProperty("--bg", t.bg);
+  sec.style.setProperty("--grad", t.grad);
+  sec.style.setProperty("--accent", t.accent);
+  sec.style.setProperty("--accent2", t.accent2);
+
+  const monthIdx = MONTHS.indexOf(month.name);
+  const year = state.year;
+  const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+  // Mon = 0 ... Sun = 6
+  const firstDay = (new Date(year, monthIdx, 1).getDay() + 6) % 7;
 
   const moodKey = month.mood.id;
-  const voice   = MOOD_VOICE[moodKey]    || MOOD_VOICE["warm-golden"];
-  const notes   = MOOD_NOTES[moodKey]    || MOOD_NOTES["warm-golden"];
-  const wishes  = MOOD_WISHLIST[moodKey] || MOOD_WISHLIST["warm-golden"];
+  const decor = MOOD_DECOR[moodKey] || MOOD_DECOR["warm-golden"];
 
-  // Stable seeded RNG so re-renders of the same month are identical.
-  const monthIdx = MONTHS.indexOf(month.name);
-  const rng = rngFromSeed(monthIdx * 1009 + (state.year % 100) * 31 + 7);
+  // Seeded RNG so re-renders are stable per month
+  const rng = rngFromSeed(monthIdx * 1009 + (year % 100) * 31 + 7);
 
-  const photos = month.photos;
-  const hero  = photos[0];
-  const grid  = photos.slice(1, 4);
-  const fillerCount = Math.max(0, 3 - grid.length);
-  for (let i = 0; i < fillerCount; i++) grid.push(photos[i % photos.length]);
-  const heroCap = pick(notes, rng);
+  // Pick which dates get hand-written event labels
+  const eventCount = Math.min(daysInMonth, 4 + Math.floor(rng() * 3)); // 4–6
+  const eventDates = pickN(
+    Array.from({ length: daysInMonth }, (_, i) => i + 1),
+    eventCount,
+    rng,
+  );
+  const events = eventDates.map((d) => ({ d, text: pick(decor.events, rng) }));
 
-  // Rotate motif: postcard / wishlist / pinned-note across chapters
-  const motifKind = ["postcard", "wishlist", "note"][idx % 3];
-  const motifHtml = renderMotif(motifKind, month, idx, voice, notes, wishes, rng);
+  // Pick which dates get a hand-drawn circle
+  const circleDates = pickN(
+    Array.from({ length: daysInMonth }, (_, i) => i + 1),
+    1 + Math.floor(rng() * 3), // 1-3
+    rng,
+  );
 
-  const palette = (month.agg?.palette || []).slice(0, 6).map((rgb) => rgbToHex(...rgb));
-
-  const captionMain = `${voice.caption} \u00B7 ${String(idx + 1).padStart(2,"0")}/${String(total).padStart(2,"0")}`;
-  const heroAlt = `${month.name} hero photo`;
+  // Build calendar grid HTML
+  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+  const cellsHtml = [];
+  for (let i = 0; i < totalCells; i++) {
+    const dayNum = i - firstDay + 1;
+    const blank = dayNum < 1 || dayNum > daysInMonth;
+    const ev = events.find((e) => e.d === dayNum);
+    const circled = circleDates.includes(dayNum);
+    cellsHtml.push(`
+      <div class="cal__cell ${blank ? "cal__cell--blank" : ""}" data-day="${blank ? "" : dayNum}">
+        ${blank ? "" : `<span class="cal__num">${dayNum}</span>`}
+        ${ev ? `<span class="cal__note">${escapeHtml(ev.text)}</span>` : ""}
+        ${circled ? handCircleSVG(rng, t.accent) : ""}
+      </div>
+    `);
+  }
 
   sec.innerHTML = `
     <div class="board__head">
@@ -731,42 +707,40 @@ function buildBoard(month, idx, total) {
       <button class="board__export" type="button" data-export>Save PNG</button>
     </div>
 
-    <article class="board__capture" data-capture>
-      <header class="page-head">
-        <p class="page-caption">${escapeHtml(captionMain)}</p>
-        <h2 class="page-title">${escapeHtml(month.name)}</h2>
-        <p class="page-accent">${escapeHtml(voice.accent)}</p>
-        <hr class="page-rule" />
-      </header>
-
-      <figure class="page-hero">
-        <img src="${hero.url}" alt="${escapeHtml(heroAlt)}" />
-        <figcaption class="page-hero__cap">${escapeHtml(heroCap)}</figcaption>
-      </figure>
-
-      <p class="page-lede">${escapeHtml(buildLede(month, voice))}</p>
-
-      ${grid.length ? `
-        <div class="page-strip">
-          ${grid.map((p) => `<figure><img src="${p.url}" alt="" /></figure>`).join("")}
+    <div class="board__capture" data-capture>
+      <div class="paper">
+        <div class="paper__top">
+          <span class="paper__icon" aria-hidden="true">‹</span>
+          <span class="paper__crumb">${year}</span>
+          <span class="paper__top-spacer"></span>
+          <span class="paper__icon" aria-hidden="true">▤</span>
+          <span class="paper__icon" aria-hidden="true">⌕</span>
+          <span class="paper__icon" aria-hidden="true">+</span>
         </div>
-      ` : ""}
+        <h2 class="paper__title">${month.name} <em>moodboard</em></h2>
+        <p class="paper__mood">${month.mood.label.toLowerCase()}</p>
 
-      ${motifHtml}
-
-      <div class="page-palette" aria-label="Palette">
-        ${palette.map((c) => `<span style="background:${c}"></span>`).join("")}
+        <div class="cal" data-cal>
+          <div class="cal__weekdays">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+          <div class="cal__grid">
+            ${cellsHtml.join("")}
+          </div>
+        </div>
       </div>
 
-      <footer class="page-foot">
-        <span class="page-foot__rule"></span>
-        <span class="page-foot__center">Volume ${String(idx + 1).padStart(2, "0")} \u00B7 ${escapeHtml(month.mood.label)}</span>
-        <span class="page-foot__rule"></span>
-      </footer>
-    </article>
+      <div class="board__decor" data-decor></div>
+    </div>
   `;
 
-  sec.querySelector("[data-export]").addEventListener("click", () => exportBoardAsPNG(sec, month));
+  // Wire up export button
+  const exportBtn = sec.querySelector("[data-export]");
+  exportBtn.addEventListener("click", () => exportBoardAsPNG(sec, month));
+
+  // Stash data for decorate pass
+  sec.__decorData = { month, decor, rng, monthIdx, year };
+
   return sec;
 }
 
@@ -774,62 +748,232 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-/* ---- Lede builder: a short italic intro pulled from mood + month ---- */
-function buildLede(month, voice) {
-  const v = voice.accent.toLowerCase();
-  const m = month.name;
-  // Short, generic editorial prose — composed per month so it never repeats
-  // verbatim across chapters.
-  const templates = [
-    `${m} kept ${v} on every windowsill.`,
-    `A small chapter of ${v} \u2014 ${m}, mostly quiet.`,
-    `Notes from ${m}: ${v}, light, and slow afternoons.`,
-    `${m} read like a single long paragraph of ${v}.`,
-  ];
-  return templates[(month.name.length + v.length) % templates.length];
+/* ---- Decoration placement (post-layout, uses real cell rects) ---- */
+
+function decorateBoard(boardEl) {
+  const data = boardEl.__decorData;
+  if (!data) return;
+  const { month, decor, monthIdx, year } = data;
+  const rng = rngFromSeed(monthIdx * 9013 + (year % 100) * 41 + 19);
+
+  const capture = boardEl.querySelector("[data-capture]");
+  const decorEl = boardEl.querySelector("[data-decor]");
+  decorEl.innerHTML = "";
+
+  const capRect = capture.getBoundingClientRect();
+  const W = capRect.width;
+  const H = Math.max(capRect.height, capture.offsetHeight);
+
+  // Reference rects (relative to capture origin)
+  const localRect = (sel) => {
+    const el = boardEl.querySelector(sel);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { x: r.left - capRect.left, y: r.top - capRect.top, w: r.width, h: r.height };
+  };
+  const paperRect = localRect(".paper");
+  const titleRect = localRect(".paper__title");
+  const moodRect = localRect(".paper__mood");
+  const wkRect = localRect(".cal__weekdays");
+  const gridRect = localRect(".cal__grid");
+
+  // Forbidden zone for stickers: from paper top through the weekday header,
+  // so emoji never lands on the title, mood subtitle, or weekday labels.
+  const titleZone = (paperRect && wkRect)
+    ? {
+        x: paperRect.x - 8,
+        y: paperRect.y,
+        w: paperRect.w + 16,
+        h: (wkRect.y + wkRect.h) - paperRect.y + 4,
+      }
+    : null;
+
+  // Polaroid top must clear the weekday row
+  const minPolaroidY = wkRect ? wkRect.y + wkRect.h + 4 : 140;
+  // Polaroid bottom must stay within capture (or extend slightly past)
+  const maxPolaroidBottom = H - 10;
+
+  // ---- Polaroids ----
+  const cells = [...boardEl.querySelectorAll(".cal__cell:not(.cal__cell--blank)")];
+  const cellRects = cells.map((c) => {
+    const r = c.getBoundingClientRect();
+    return { x: r.left - capRect.left, y: r.top - capRect.top, w: r.width, h: r.height };
+  });
+  const order = [...cellRects.keys()];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+
+  const placed = [];
+  const photos = month.photos;
+
+  // Smaller polaroids when there are many photos
+  const photoCount = photos.length;
+  const widthScale = photoCount >= 8 ? 0.22 : photoCount >= 5 ? 0.26 : 0.30;
+  const baseW = Math.max(80, Math.min(130, W * widthScale));
+
+  // Caption queue: alternate between event vocab and "mmm dd" labels, all distinct
+  const eventPool = [...decor.events];
+  const eventQueue = [];
+  while (eventPool.length) eventQueue.push(eventPool.splice(Math.floor(rng() * eventPool.length), 1)[0]);
+
+  photos.forEach((photo, i) => {
+    let chosenRect = null;
+    for (let attempt = 0; attempt < Math.min(10, order.length); attempt++) {
+      const idx = order[(i * 7 + attempt) % order.length];
+      const cr = cellRects[idx];
+      if (!cr) continue;
+      const sizeJitter = 0.9 + rng() * 0.22;
+      const w = baseW * sizeJitter;
+      const h = w * 1.18;
+      const cx = cr.x + cr.w / 2 + (rng() - 0.5) * cr.w * 0.5;
+      const cy = cr.y + cr.h / 2 + (rng() - 0.5) * cr.h * 0.4;
+      let rx = cx - w/2;
+      let ry = cy - h/2;
+      // Clamp so polaroid does not cover the weekday header or month title
+      ry = Math.max(minPolaroidY, ry);
+      ry = Math.min(maxPolaroidBottom - h, ry);
+      // Keep mostly within capture horizontally (allow ~15% overflow)
+      rx = Math.max(-w * 0.15, Math.min(W - w * 0.85, rx));
+      const rect = { x: rx, y: ry, w, h };
+      let overlap = 0;
+      for (const p of placed) overlap += rectOverlap(rect, p);
+      if (chosenRect == null || overlap < chosenRect._overlap) {
+        chosenRect = { ...rect, _overlap: overlap };
+      }
+      if (overlap === 0) break;
+    }
+    if (!chosenRect) return;
+    placed.push(chosenRect);
+
+    const tilt = (rng() - 0.5) * 16; // -8..+8
+    const useDate = rng() < 0.45;
+    const day = 1 + Math.floor(rng() * 27);
+    const cap = useDate
+      ? `${month.name.slice(0, 3).toLowerCase()} ${day}`
+      : (eventQueue[i % eventQueue.length] || pick(decor.events, rng));
+
+    const clipKind = ["top", "tl", "tr"][Math.floor(rng() * 3)];
+    const clipSVG = rng() < 0.55 ? paperclipSVG() : binderClipSVG();
+
+    const fig = document.createElement("figure");
+    fig.className = "polaroid";
+    fig.style.left = `${chosenRect.x}px`;
+    fig.style.top  = `${chosenRect.y}px`;
+    fig.style.width  = `${chosenRect.w}px`;
+    fig.style.transform = `rotate(${tilt.toFixed(2)}deg)`;
+    fig.style.zIndex = 10 + i;
+    const photoH = chosenRect.h - 36;
+    fig.innerHTML = `
+      <span class="clip clip--${clipKind}">${clipSVG}</span>
+      <img src="${photo.url}" alt="" style="height:${photoH}px" />
+      <figcaption>${escapeHtml(cap)}</figcaption>
+    `;
+    decorEl.appendChild(fig);
+  });
+
+  // ---- Stickers ----
+  // Pick distinct emoji where possible
+  const stickerPool = [...decor.stickers];
+  for (let i = stickerPool.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [stickerPool[i], stickerPool[j]] = [stickerPool[j], stickerPool[i]];
+  }
+  const stickerCount = Math.min(stickerPool.length, 6 + Math.floor(rng() * 3));
+  let placedStickers = 0;
+  for (let attempts = 0; attempts < stickerCount * 5 && placedStickers < stickerCount; attempts++) {
+    const emoji = stickerPool[placedStickers % stickerPool.length];
+    const size = 22 + Math.floor(rng() * 14);
+    const x = -8 + rng() * (W - size + 16);
+    // Allow stickers anywhere from the date-grid area downwards
+    const stickerYStart = (gridRect ? gridRect.y : 140);
+    const yMax = H - size - 8;
+    const y = stickerYStart + rng() * (yMax - stickerYStart);
+    const sx = x, sy = y, sw = size, sh = size;
+    if (titleZone && rectOverlap({x:sx,y:sy,w:sw,h:sh}, titleZone) > 0) continue;
+    // Discourage overlap with already-placed polaroids (allow some)
+    let polOverlap = 0;
+    for (const p of placed) polOverlap += rectOverlap({x:sx,y:sy,w:sw,h:sh}, p);
+    if (polOverlap > sw * sh * 0.4) continue;
+    const tilt = (rng() - 0.5) * 30;
+    const span = document.createElement("span");
+    span.className = "sticker";
+    span.textContent = emoji;
+    span.style.left = `${sx}px`;
+    span.style.top  = `${sy}px`;
+    span.style.fontSize = `${size}px`;
+    span.style.transform = `rotate(${tilt.toFixed(1)}deg)`;
+    span.style.zIndex = 6;
+    decorEl.appendChild(span);
+    placedStickers++;
+  }
+
+  // ---- Free handwritten scribbles (distinct text + distinct slots) ----
+  const scribbleCount = 1 + Math.floor(rng() * 2);
+  const scribbleTexts = pickN(decor.scribbles, Math.min(scribbleCount, decor.scribbles.length), rng);
+  const baseY = paperRect ? paperRect.y + paperRect.h + 12 : H - 110;
+  const slotW = (W - 32) / Math.max(1, scribbleTexts.length);
+  scribbleTexts.forEach((text, i) => {
+    const x = 16 + i * slotW + rng() * (slotW * 0.35);
+    const y = baseY + (i % 2) * 26 + rng() * 16;
+    const tilt = (rng() - 0.5) * 14;
+    const el = document.createElement("p");
+    el.className = "scribble " + (rng() < 0.5 ? "scribble--accent" : "");
+    el.textContent = text;
+    el.style.left = `${x}px`;
+    el.style.top  = `${y}px`;
+    el.style.transform = `rotate(${tilt.toFixed(1)}deg)`;
+    el.style.zIndex = 7;
+    decorEl.appendChild(el);
+  });
 }
 
-/* ---- Motif builders: postcard / wishlist / pinned-note ---- */
-function renderMotif(kind, month, idx, voice, notes, wishes, rng) {
-  if (kind === "postcard") {
-    const hand = pick(notes, rng);
-    return `
-      <aside class="motif motif--postcard" aria-hidden="true">
-        <div class="postcard__msg">
-          <p class="postcard__hand">${escapeHtml(hand)}</p>
-          <span class="postcard__msg-line"></span>
-          <span class="postcard__msg-line"></span>
-          <span class="postcard__msg-line"></span>
-        </div>
-        <div class="postcard__address">
-          <span class="postcard__stamp">${String(idx + 1).padStart(2,"0")}</span>
-          <div class="postcard__lines">
-            <span></span><span></span><span></span>
-          </div>
-        </div>
-      </aside>
-    `;
-  }
-  if (kind === "wishlist") {
-    return `
-      <aside class="motif motif--wishlist" aria-hidden="true">
-        <p class="wishlist__head">WISHLIST \u00B7 ${escapeHtml(month.name)}</p>
-        <h3 class="wishlist__title">${escapeHtml(voice.accent)}</h3>
-        <ol class="wishlist__list">
-          ${wishes.slice(0, 4).map((w, i) => `
-            <li data-num="${String(i + 1).padStart(2, "0")}">${escapeHtml(w)}</li>
-          `).join("")}
-        </ol>
-      </aside>
-    `;
-  }
-  // note
-  const text = pick(notes, rng);
+function rectOverlap(a, b) {
+  const x = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
+  const y = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+  return x * y;
+}
+
+/* ---- Hand-drawn circle around a date (SVG, double-stroked) ---- */
+function handCircleSVG(rng, color) {
+  const w = 36, h = 32;
+  const cx = w/2, cy = h/2;
+  const rx = 13 + rng() * 2;
+  const ry = 11 + rng() * 2;
+  const r1 = (rng() - 0.5) * 10;
+  const r2 = (rng() - 0.5) * 8;
   return `
-    <aside class="motif motif--note" aria-hidden="true">
-      <p class="note__hand">${escapeHtml(text)}</p>
-      <p class="note__sub">${escapeHtml(voice.caption)}</p>
-    </aside>
+    <svg class="cal__circle" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+      <g transform="translate(${(rng()-0.5)*2} ${(rng()-0.5)*2})">
+        <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"
+          fill="none" stroke="${color}" stroke-width="1.6"
+          stroke-linecap="round" transform="rotate(${r1.toFixed(2)} ${cx} ${cy})"/>
+        <ellipse cx="${cx + (rng()-0.5)*1.4}" cy="${cy + (rng()-0.5)*1.2}"
+          rx="${(rx-0.7).toFixed(2)}" ry="${(ry-0.6).toFixed(2)}"
+          fill="none" stroke="${color}" stroke-width="1.2" opacity="0.55"
+          stroke-linecap="round" transform="rotate(${r2.toFixed(2)} ${cx} ${cy})"/>
+      </g>
+    </svg>
+  `;
+}
+
+/* ---- SVG clip glyphs ---- */
+function paperclipSVG() {
+  return `
+    <svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true">
+      <path d="M9 4 v16 a4 4 0 0 0 8 0 v-13 a3 3 0 0 0 -6 0 v11 a2 2 0 0 0 4 0 v-9"
+        fill="none" stroke="#a9a9a9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
+}
+function binderClipSVG() {
+  return `
+    <svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true">
+      <rect x="6" y="9" width="16" height="11" rx="1.2" fill="#1a1714" />
+      <rect x="9" y="11" width="10" height="2" fill="#3b3733" />
+      <path d="M9 9 l2 -4 h6 l2 4" fill="none" stroke="#1a1714" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
   `;
 }
 
@@ -918,56 +1062,7 @@ function initScrollEffects() {
 }
 
 /* =============================================================
-   Seed loader — pre-populate every month with a starter photo so
-   the app opens already showing a complete album. Users can drop
-   replacements into /seed/<short>.jpg in the repo, or tap any
-   card and pick their own. Missing files are silently skipped.
-   ============================================================= */
-
-async function loadSeedPhotos() {
-  const tasks = MONTH_SHORT.map(async (short, idx) => {
-    if (state.months[idx].photos.length > 0) return;
-    const url = `${SEED_BASE}${short}.jpg`;
-    try {
-      const resp = await fetch(url, { cache: "force-cache" });
-      if (!resp.ok) return;
-      const blob = await resp.blob();
-      if (!blob || !blob.type.startsWith("image/")) return;
-      const file = new File([blob], `${short}.jpg`, { type: blob.type, lastModified: Date.UTC(2026, idx, 12) });
-      const objUrl = URL.createObjectURL(blob);
-      state.months[idx].photos.push({
-        id: nextPhotoId++,
-        file,
-        url: objUrl,
-        analysis: null,
-        isSeed: true,
-      });
-    } catch (e) { /* offline / 404 — skip */ }
-  });
-  await Promise.all(tasks);
-  renderMonths();
-
-  // Pre-analyze each seeded month so the bento caption can show the
-  // detected mood voice (and so Compose is instant when tapped).
-  for (const month of state.months) {
-    if (month.photos.length === 0) continue;
-    for (const p of month.photos) {
-      if (!p.analysis) {
-        try { p.analysis = await analyzePhoto(p); } catch { /* keep going */ }
-      }
-    }
-    if (month.photos.every((p) => p.analysis)) {
-      month.agg = aggregateMonth(month.photos);
-      month.mood = pickMood(month.agg);
-      month.theme = buildTheme(month.agg, month.mood);
-    }
-  }
-  renderMonths();
-}
-
-/* =============================================================
    Init
    ============================================================= */
 
 renderMonths();
-loadSeedPhotos();

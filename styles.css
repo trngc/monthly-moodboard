@@ -159,15 +159,15 @@ button { font: inherit; color: inherit; }
   filter: brightness(1.04);
 }
 
-/* Top-left abbreviation — editorial small caps */
+/* Minimal corner abbreviation — top-left of every card */
 .bento__abbr {
   position: absolute;
   top: clamp(10px, 1.4vw, 16px);
   left: clamp(10px, 1.4vw, 16px);
   z-index: 3;
   font-family: var(--sans);
-  font-size: 10px;
-  letter-spacing: 0.22em;
+  font-size: 11px;
+  letter-spacing: 0.18em;
   font-weight: 600;
   text-transform: uppercase;
   color: var(--card-fg, #1a1714);
@@ -177,39 +177,8 @@ button { font: inherit; color: inherit; }
 }
 .bento__card.has-photos .bento__abbr {
   color: #fff;
-  opacity: 0.94;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.34);
-}
-
-/* Editorial caption (mood voice) — small uppercase, bottom-center.
-   Container-query gated: hidden on narrow cards, shown on wider ones. */
-.bento__caption {
-  position: absolute;
-  bottom: clamp(10px, 1.4vw, 14px);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
-  font-family: var(--sans);
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--card-fg, #1a1714);
-  opacity: 0.72;
-  pointer-events: none;
-  white-space: nowrap;
-  display: none;
-  font-size: 8px;
-  letter-spacing: 0.22em;
-}
-@container bento (min-width: 165px) {
-  .bento__caption { display: inline; font-size: 9px; letter-spacing: 0.28em; }
-}
-@container bento (min-width: 240px) {
-  .bento__caption { font-size: 10px; letter-spacing: 0.3em; }
-}
-.bento__card.has-photos .bento__caption {
-  color: #fff;
-  opacity: 0.92;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  opacity: 0.96;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.28);
 }
 
 /* Top-right circular "+" affordance — present on every card */
@@ -292,19 +261,15 @@ button { font: inherit; color: inherit; }
 
 /* (hover tint lives on .bento__card::before above) */
 
-/* Photo collage — inset slightly so the card's muted color forms a thin
-   editorial matt around the photo (like a printed frame). */
+/* Photo collage backgrounds */
 .bento__photos {
   position: absolute;
-  inset: clamp(5px, 0.7vw, 9px);
+  inset: 0;
   display: grid;
   gap: 2px;
   z-index: 0;
   pointer-events: none;
   background: var(--card-bg, #f0ebe4);
-  border-radius: clamp(6px, 0.8vw, 12px);
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 .bento__photos[data-photos="1"] { grid-template-columns: 1fr; grid-template-rows: 1fr; }
 .bento__photos[data-photos="2"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
@@ -329,11 +294,10 @@ button { font: inherit; color: inherit; }
 .bento__card.has-photos::after {
   content: "";
   position: absolute;
-  inset: clamp(5px, 0.7vw, 9px);
-  border-radius: clamp(6px, 0.8vw, 12px);
+  inset: 0;
   background:
-    linear-gradient(180deg, rgba(0,0,0,0) 65%, rgba(0,0,0,0.28) 100%),
-    linear-gradient(180deg, rgba(0,0,0,0.14) 0%, rgba(0,0,0,0) 22%);
+    linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 100%),
+    linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0) 35%);
   z-index: 1;
   pointer-events: none;
 }
@@ -496,12 +460,12 @@ button { font: inherit; color: inherit; }
 /* (Old centered footer styles removed — replaced by .intro__bar) */
 
 /* =============================================================
-   ALBUM — polished editorial moodboard pages
+   ALBUM (scrapbook calendar moodboards)
    ============================================================= */
 
 .album {
   width: 100%;
-  background: #16110e;
+  background: #1a1614;
   overflow-x: hidden;
   font-family: var(--sans);
 }
@@ -520,452 +484,314 @@ button { font: inherit; color: inherit; }
   background: rgba(246, 243, 238, 0.92);
   backdrop-filter: saturate(140%) blur(10px);
   -webkit-backdrop-filter: saturate(140%) blur(10px);
-  border-bottom: 1px solid rgba(26, 23, 20, 0.10);
+  border-bottom: 1px solid rgba(26, 23, 20, 0.12);
   color: var(--ink);
 }
 .album__back {
   background: none;
   border: none;
   padding: 6px 8px;
-  font-size: 11px;
-  letter-spacing: 0.22em;
+  font-size: 12px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   cursor: pointer;
   color: var(--ink);
-  font-weight: 600;
 }
 .album__brand {
   margin: 0;
   text-align: center;
-  font-family: "Italianno", "Italiana", serif;
-  font-size: 28px;
-  line-height: 1;
-  letter-spacing: 0;
-  color: var(--ink);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 17px;
+  letter-spacing: -0.01em;
 }
 .album__year {
-  font-family: var(--sans);
-  font-size: 11px;
+  font-family: "Caveat", cursive;
+  font-size: 22px;
   font-weight: 600;
-  letter-spacing: 0.22em;
   color: var(--ink);
   padding: 0 6px;
   justify-self: end;
 }
 
-/* Pages container */
+/* Boards container */
 .boards {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 24px 14px 64px;
+  gap: 22px;
+  padding: 22px 14px 64px;
   background: #16110e;
 }
 
-/* ============= per-page (one month) =============
-   Every page is themed with --bg (muted color), --ink (legible foreground),
-   --accent / --accent-2 (palette accents), and --c-serif / --c-sans
-   (font pairing keyed to the month's mood). */
+/* ============= per-board ============= */
 .board {
+  /* per-board custom props set inline by JS:
+     --bg, --grad, --accent, --accent2, --c-serif, --c-sans, --paper-tint */
   position: relative;
   isolation: isolate;
 }
 .board__capture {
   position: relative;
   width: 100%;
-  border-radius: 18px;
+  border-radius: 22px;
   overflow: hidden;
-  background: var(--bg, #c4d2dc);
-  color: var(--ink, #1a1714);
-  padding: clamp(22px, 4vw, 36px) clamp(18px, 3.5vw, 32px) clamp(28px, 4vw, 40px);
-  min-height: 760px;
-  font-family: var(--c-sans, var(--sans));
+  background: var(--bg, #d9c8b3);
+  background-image: var(--grad, none);
+  background-size: cover;
+  background-position: center;
+  padding: 26px 18px 30px;
+  /* Loose phone-page proportion that still feels generous on tall screens */
+  min-height: 720px;
+  font-family: var(--sans);
 }
 
-/* Top chip + export button — outside the capture so they don't bake in */
-.board__head {
+/* Subtle paper noise feel via two soft radial gradients */
+.board__capture::before {
+  content: "";
   position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  z-index: 5;
+  inset: 0;
+  background:
+    radial-gradient(120% 60% at 0% 0%, var(--accent2, #b89d77)33 0%, transparent 50%),
+    radial-gradient(120% 60% at 100% 100%, var(--accent, #66523f)33 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.board__head {
+  position: relative;
+  z-index: 4;
   display: flex;
   align-items: center;
   gap: 8px;
-  pointer-events: none;
+  padding: 4px 4px 14px;
+  color: var(--ink);
 }
 .board__head .board__chapter {
-  font-family: var(--sans);
-  font-size: 10px;
-  letter-spacing: 0.28em;
+  font-family: "Caveat", cursive;
+  font-size: 18px;
   font-weight: 600;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.78);
-  background: rgba(20,17,15,0.6);
-  padding: 5px 10px;
+  color: var(--paper);
+  background: rgba(20,17,15,0.55);
+  padding: 4px 10px;
   border-radius: 999px;
-  pointer-events: auto;
+  letter-spacing: 0.02em;
 }
 .board__head .board__head-spacer { flex: 1; }
 .board__head .board__export {
   font-family: var(--sans);
-  font-size: 10px;
-  letter-spacing: 0.22em;
+  font-size: 11px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  font-weight: 600;
-  background: rgba(255,255,255,0.95);
-  color: #1a1714;
+  background: rgba(255,255,255,0.92);
+  color: var(--ink);
   border: none;
-  padding: 7px 12px;
+  padding: 8px 12px;
   border-radius: 999px;
   cursor: pointer;
   white-space: nowrap;
-  pointer-events: auto;
 }
 .board__head .board__export[disabled] { opacity: 0.5; cursor: progress; }
 
-/* ---- Editorial page composition ---- */
-
-.page-head {
-  display: grid;
-  grid-template-columns: 1fr;
-  align-items: end;
-  gap: 4px;
-  padding: clamp(28px, 6vw, 40px) 0 clamp(8px, 1.5vw, 12px);
-  text-align: center;
+/* Paper card */
+.paper {
+  position: relative;
+  z-index: 2;
+  background: #fdfbf7;
+  border-radius: 20px;
+  padding: 20px 16px 18px;
+  box-shadow: 0 14px 30px -14px rgba(0,0,0,0.18), 0 2px 4px rgba(0,0,0,0.05);
+  color: #1a1714;
 }
-.page-caption {
+.paper__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
   font-family: var(--sans);
-  font-size: 10px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  font-weight: 600;
-  opacity: 0.78;
-  margin: 0;
+  font-size: 13px;
+  color: #6b645c;
 }
-.page-title {
-  font-family: var(--c-serif, "Cormorant Garamond", serif);
-  font-style: italic;
+.paper__top .paper__crumb {
+  font-size: 14px;
   font-weight: 500;
-  font-size: clamp(56px, 14vw, 100px);
-  line-height: 0.92;
-  letter-spacing: -0.01em;
-  margin: 0;
+  color: #1a1714;
 }
-.page-accent {
-  font-family: "Italianno", "Pinyon Script", cursive;
-  font-size: clamp(34px, 8vw, 56px);
-  line-height: 0.9;
-  margin: -4px 0 0;
-  color: var(--accent, currentColor);
+.paper__top .paper__icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: #1a1714;
+  opacity: 0.7;
+  font-size: 14px;
+}
+.paper__top .paper__top-spacer { flex: 1; }
+
+.paper__title {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  margin: 0 0 2px;
+  color: #14110f;
+}
+.paper__title em {
+  font-family: "Caveat", cursive;
+  font-weight: 600;
+  font-style: normal;
+  font-size: 26px;
+  margin-left: 6px;
+  color: var(--accent, #66523f);
   letter-spacing: 0;
 }
-.page-rule {
-  width: 36px;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.42;
-  margin: clamp(10px, 1.6vw, 14px) auto 0;
-  border: 0;
+.paper__mood {
+  font-family: "Caveat", cursive;
+  font-size: 18px;
+  margin: 0 0 12px;
+  color: var(--accent, #66523f);
+  letter-spacing: 0.01em;
 }
 
-/* Hero photo with thin paper border + slight tilt + soft shadow */
-.page-hero {
+/* Calendar */
+.cal {
   position: relative;
-  width: clamp(72%, 88%, 92%);
-  margin: clamp(18px, 3vw, 30px) auto clamp(14px, 2vw, 20px);
-  background: #fff;
-  padding: clamp(6px, 1vw, 10px);
-  border-radius: 2px;
-  transform: rotate(-1.5deg);
-  box-shadow:
-    0 1px 1px rgba(0,0,0,0.08),
-    0 18px 28px -12px rgba(0,0,0,0.32);
 }
-.page-hero img {
+.cal__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8a847b;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(20,17,15,0.08);
+}
+.cal__weekdays span {
+  text-align: center;
+  padding: 4px 0;
+}
+.cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(54px, auto);
+  position: relative;
+}
+.cal__cell {
+  border-right: 1px solid rgba(20,17,15,0.06);
+  border-bottom: 1px solid rgba(20,17,15,0.06);
+  padding: 6px 5px;
+  position: relative;
+  min-height: 54px;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: #1a1714;
+}
+.cal__cell:nth-child(7n) { border-right: 0; }
+.cal__cell--blank { color: rgba(20,17,15,0.18); }
+.cal__num {
+  display: inline-block;
+  line-height: 1;
+}
+.cal__note {
   display: block;
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
-  background: #ece6d6;
+  margin-top: 3px;
+  font-family: "Caveat", cursive;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--accent, #66523f);
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
-.page-hero__cap {
+
+/* Hand-drawn circle around a date number */
+.cal__circle {
   position: absolute;
-  bottom: -28px;
-  right: -8px;
-  font-family: "Italianno", cursive;
-  font-size: 26px;
-  color: var(--accent, currentColor);
-  transform: rotate(-3deg);
-  white-space: nowrap;
-  opacity: 0.95;
+  pointer-events: none;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ============ Decorations ============ */
+
+.board__decor {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
   pointer-events: none;
 }
 
-/* Body copy — short, italic, restrained */
-.page-lede {
-  font-family: var(--c-serif, "Cormorant Garamond", serif);
-  font-style: italic;
-  font-size: clamp(15px, 2vw, 18px);
-  line-height: 1.45;
-  margin: clamp(28px, 4vw, 38px) auto 0;
-  max-width: 38ch;
-  text-align: center;
-  opacity: 0.86;
-}
-
-/* Photo strip — thin-bordered overlapping prints */
-.page-strip {
-  display: grid;
-  grid-template-columns: 1.05fr 0.85fr 1fr;
-  gap: clamp(8px, 1.4vw, 14px);
-  margin: clamp(28px, 4vw, 36px) 0 0;
-  align-items: center;
-}
-.page-strip figure {
-  margin: 0;
+.polaroid {
+  position: absolute;
   background: #fff;
-  padding: clamp(4px, 0.8vw, 7px);
-  border-radius: 2px;
+  padding: 8px 8px 28px;
   box-shadow:
-    0 1px 1px rgba(0,0,0,0.08),
-    0 12px 22px -10px rgba(0,0,0,0.24);
-  position: relative;
+    0 1px 1px rgba(0,0,0,0.06),
+    0 8px 18px -6px rgba(0,0,0,0.28);
+  border-radius: 2px;
+  margin: 0;
 }
-.page-strip figure:nth-child(1) { transform: rotate(-2deg) translateY(6px); }
-.page-strip figure:nth-child(2) { transform: rotate(1.5deg); aspect-ratio: 3 / 4; }
-.page-strip figure:nth-child(3) { transform: rotate(-1deg) translateY(-4px); }
-.page-strip img {
+.polaroid > img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  aspect-ratio: 4 / 5;
+  background: #f0ebe4;
 }
-
-/* ---- Motif cards (postcard / wishlist / pinned-note) ---- */
-
-.motif {
-  margin: clamp(34px, 5vw, 48px) auto 0;
-  max-width: 92%;
-}
-
-/* Postcard motif */
-.motif--postcard {
-  position: relative;
-  background: #f5efe2;
-  color: #1a1714;
-  padding: 18px 18px 20px;
-  border-radius: 4px;
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 16px;
-  box-shadow:
-    0 1px 1px rgba(0,0,0,0.06),
-    0 14px 22px -10px rgba(0,0,0,0.22);
-  transform: rotate(0.6deg);
-  font-family: var(--sans);
-}
-.motif--postcard::before {
-  content: "POST CARD";
+.polaroid figcaption {
   position: absolute;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 9px;
-  letter-spacing: 0.4em;
-  font-weight: 700;
-  color: #1a1714;
-  opacity: 0.55;
-}
-.motif--postcard::after {
-  content: "";
-  position: absolute;
-  top: 32px;
-  bottom: 16px;
-  left: 50%;
-  width: 1px;
-  background: rgba(20,17,15,0.18);
-}
-.postcard__msg {
-  padding-top: 18px;
-}
-.postcard__hand {
-  font-family: "Italianno", cursive;
-  font-size: 26px;
-  line-height: 1;
-  color: var(--accent, #6f3a3a);
-  margin: 0 0 8px;
-}
-.postcard__msg-line {
-  height: 1px;
-  background: rgba(20,17,15,0.18);
-  margin: 8px 0;
-}
-.postcard__address {
-  padding: 18px 0 0;
-  display: grid;
-  align-content: start;
-  gap: 6px;
-}
-.postcard__stamp {
-  width: 44px;
-  height: 56px;
-  border: 1px dashed rgba(20,17,15,0.32);
-  margin-left: auto;
-  margin-bottom: 8px;
-  display: grid;
-  place-items: center;
-  color: var(--accent, #6f3a3a);
-  font-family: var(--c-serif, "Cormorant Garamond", serif);
-  font-style: italic;
-  font-size: 22px;
-}
-.postcard__lines {
-  display: grid;
-  gap: 6px;
-}
-.postcard__lines span {
-  height: 1px;
-  background: rgba(20,17,15,0.18);
-}
-
-/* Wishlist motif */
-.motif--wishlist {
-  position: relative;
-  background: #f5efe2;
-  color: #1a1714;
-  padding: 22px 22px 24px;
-  border-radius: 4px;
-  box-shadow:
-    0 1px 1px rgba(0,0,0,0.06),
-    0 14px 22px -10px rgba(0,0,0,0.22);
-  transform: rotate(-0.8deg);
-  font-family: var(--sans);
-}
-.wishlist__head {
-  text-align: center;
-  font-size: 10px;
-  letter-spacing: 0.32em;
-  font-weight: 700;
-  color: #1a1714;
-  margin: 0 0 14px;
-  opacity: 0.78;
-}
-.wishlist__title {
-  font-family: var(--c-serif, "Cormorant Garamond", serif);
-  font-style: italic;
-  text-align: center;
-  font-size: 28px;
-  line-height: 1;
-  margin: 0 0 14px;
-}
-.wishlist__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
-}
-.wishlist__list li {
-  display: grid;
-  grid-template-columns: 28px 1fr;
-  align-items: baseline;
-  gap: 10px;
-  border-bottom: 1px dashed rgba(20,17,15,0.20);
-  padding: 4px 0 6px;
-  font-size: 14px;
-}
-.wishlist__list li::before {
-  content: attr(data-num);
-  color: var(--accent, #1a1714);
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-}
-
-/* Pinned-note motif */
-.motif--note {
-  position: relative;
-  background: #fdfbf7;
-  padding: 28px 18px 20px;
-  border-radius: 2px;
-  box-shadow:
-    0 1px 1px rgba(0,0,0,0.06),
-    0 14px 22px -10px rgba(0,0,0,0.22);
-  transform: rotate(2deg);
-  max-width: 78%;
-  margin: clamp(34px, 5vw, 48px) auto 0;
-  color: #1a1714;
-}
-.motif--note::before {
-  content: "";
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%) rotate(-6deg);
-  width: 28px;
-  height: 22px;
-  background:
-    linear-gradient(180deg, #1a1714 0 9px, #3b3733 9px 11px, #1a1714 11px 100%);
-  border-radius: 1px;
-}
-.note__hand {
+  left: 8px;
+  right: 8px;
+  bottom: 6px;
   font-family: "Caveat", cursive;
-  font-size: 28px;
-  line-height: 1.1;
+  font-size: 14px;
+  line-height: 1;
   color: #1a1714;
-  margin: 0;
   text-align: center;
 }
-.note__sub {
-  font-family: var(--sans);
-  font-size: 9px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  font-weight: 600;
-  text-align: center;
-  margin: 12px 0 0;
-  opacity: 0.6;
+
+/* Binder-clip / paperclip on top of polaroid */
+.polaroid .clip {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  z-index: 1;
+}
+.polaroid .clip--top    { top: -10px; left: 50%; transform: translateX(-50%) rotate(-6deg); }
+.polaroid .clip--tl     { top: -10px; left: 12%; transform: rotate(-22deg); }
+.polaroid .clip--tr     { top: -10px; right: 8%;  transform: rotate(20deg); }
+
+/* Stickers (emoji or small SVG) */
+.sticker {
+  position: absolute;
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.18));
 }
 
-/* Palette + stats footer (optional) */
-.page-foot {
-  margin: clamp(34px, 5vw, 50px) 0 0;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 10px;
+/* Handwritten free-floating notes (not in a date cell) */
+.scribble {
+  position: absolute;
+  font-family: "Caveat", cursive;
+  font-size: 22px;
+  line-height: 1.05;
+  color: #1a1714;
+  max-width: 130px;
 }
-.page-foot__rule {
-  height: 1px;
-  background: currentColor;
-  opacity: 0.32;
-}
-.page-foot__center {
-  font-family: var(--sans);
-  font-size: 10px;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  font-weight: 600;
-  white-space: nowrap;
-  opacity: 0.78;
+.scribble.scribble--accent { color: var(--accent, #66523f); }
+
+/* Small underline "doodle" beneath some labels */
+.doodle {
+  position: absolute;
+  pointer-events: none;
 }
 
-.page-palette {
-  display: flex;
-  gap: 0;
-  margin: clamp(14px, 2vw, 20px) auto 0;
-  width: clamp(60%, 70%, 80%);
-  border-top: 1px solid rgba(0,0,0,0.10);
-  padding-top: 10px;
-}
-.page-palette span {
-  flex: 1;
-  height: 10px;
-}
-
-/* Reveal — gentle fade for editorial pieces */
+/* ============ misc ============ */
 .reveal { opacity: 0; transform: translateY(14px); transition: opacity 700ms ease, transform 700ms ease; }
 .reveal.is-in { opacity: 1; transform: none; }
 
