@@ -76,319 +76,273 @@ button { font: inherit; color: inherit; }
 }
 
 /* =============================================================
-   BENTO month grid (intro) — asymmetric, single-viewport
+   Top-left wordmark (outside the collage)
    ============================================================= */
-
-.bento {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  flex: 1 1 auto;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: 1fr;
-  gap: clamp(8px, 1.6vw, 14px);
-  min-height: 0;
-  /* Mobile (3-col × 6-row) — text cell top-left, JAN as 2x2 hero, mixed */
-  grid-template-areas:
-    "text feb feb"
-    "jan  jan  mar"
-    "jan  jan  apr"
-    "may  jun  jun"
-    "jul  aug  sep"
-    "oct  nov  dec";
-}
-
-/* Direct children of .bento become grid items via grid-area assignments */
-
-.bento__card {
-  /* per-card theme via custom props (set inline by JS):
-     --card-bg, --card-fg, --card-accent */
-  position: relative;
-  isolation: isolate;
-  border: 0;
-  margin: 0;
-  padding: 0;
-  border-radius: clamp(16px, 2vw, 26px);
-  container-type: inline-size;
-  container-name: bento;
-  background: var(--card-bg, #f0ebe4);
-  color: var(--card-fg, #1a1714);
+.intro__head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: clamp(2px, 0.6vw, 6px) clamp(2px, 0.6vw, 6px) 0;
   font-family: var(--sans);
-  text-align: left;
-  cursor: pointer;
-  overflow: hidden;
-  display: block;
-  transition: transform 220ms cubic-bezier(.2,.7,.2,1),
-              box-shadow 220ms ease,
-              filter 220ms ease;
-  -webkit-tap-highlight-color: transparent;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
 }
-
-/* Subtle inner ring + hover tint, single pseudo */
-.bento__card::before {
+.head__logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--ink);
+  flex: 0 0 auto;
+  position: relative;
+  margin-top: 2px;
+}
+.head__logo::after {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
-  background: rgba(255,255,255,0);
-  pointer-events: none;
-  z-index: 2;
-  transition: background 220ms ease;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink);
+  bottom: -8px;
+  left: 36px;
 }
-.bento__card:hover::before { background: rgba(255,255,255,0.10); }
-.bento__card.has-photos:hover::before { background: rgba(0,0,0,0.10); }
-
-.bento__card:hover {
-  transform: translateY(-3px) scale(1.012);
-  box-shadow: 0 22px 34px -18px rgba(0,0,0,0.28);
-  filter: saturate(1.04);
-}
-.bento__card:active { transform: translateY(0) scale(0.985); }
-.bento__card:focus-visible {
-  outline: 3px solid var(--card-accent, #1a1714);
-  outline-offset: 3px;
-}
-.bento__card.is-drag {
-  outline: 2px dashed currentColor;
-  outline-offset: -8px;
-  filter: brightness(1.04);
-}
-
-/* Minimal corner abbreviation — top-left of every card */
-.bento__abbr {
-  position: absolute;
-  top: clamp(10px, 1.4vw, 16px);
-  left: clamp(10px, 1.4vw, 16px);
-  z-index: 3;
+.head__line {
   font-family: var(--sans);
-  font-size: 11px;
-  letter-spacing: 0.18em;
+  font-size: 13px;
   font-weight: 600;
-  text-transform: uppercase;
-  color: var(--card-fg, #1a1714);
-  opacity: 0.78;
-  pointer-events: none;
-  font-feature-settings: "tnum" 1;
+  line-height: 1.3;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  padding-top: 2px;
 }
-.bento__card.has-photos .bento__abbr {
-  color: #fff;
-  opacity: 0.96;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.28);
+.head__line span { display: block; font-weight: 400; color: var(--ink-mute); }
+
+/* =============================================================
+   COLLAGE — layered, rotated, overlapping pieces
+   ============================================================= */
+
+.collage {
+  flex: 1 1 auto;
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  align-self: center;
+  /* The cluster lives inside this aspect-ratio box so all
+     percent-based positions scale together. */
+  aspect-ratio: 4 / 5;
+  min-height: 0;
 }
 
-/* Top-right circular "+" affordance — present on every card */
-.bento__add-icon {
+/* Each piece is positioned by CSS custom properties set inline.
+   The whole piece is a button so the entire thing is tappable. */
+.collage__item {
   position: absolute;
-  top: clamp(8px, 1vw, 12px);
-  right: clamp(8px, 1vw, 12px);
-  z-index: 3;
-  width: clamp(24px, 2.4vw, 30px);
-  height: clamp(24px, 2.4vw, 30px);
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  background: var(--card-fg, #1a1714);
-  color: var(--card-bg, #f5f3ee);
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 0;
-  pointer-events: none;
-  opacity: 0.82;
-  transition: transform 220ms cubic-bezier(.2,.7,.2,1),
-              background 220ms ease,
-              opacity 220ms ease;
+  left: var(--x);
+  top: var(--y);
+  width: var(--w);
+  z-index: var(--z, 1);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  /* Center on (x, y) and rotate, so position percentages refer to
+     the centroid of the piece — easier to compose. */
+  transform:
+    translate(-50%, -50%)
+    rotate(var(--rot, 0deg))
+    scale(1);
+  transform-origin: 50% 50%;
+  transition:
+    transform 320ms cubic-bezier(.2,.7,.2,1),
+    filter 220ms ease,
+    z-index 0ms;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
 }
-/* On filled cards the "+" flips to a light-on-photo style */
-.bento__card.has-photos .bento__add-icon {
-  background: rgba(255,255,255,0.94);
-  color: #1a1714;
-  opacity: 0.96;
-}
-.bento__card:hover .bento__add-icon {
-  opacity: 1;
-  transform: scale(1.12) rotate(90deg);
-}
-.bento__card:active .bento__add-icon { transform: scale(1.04) rotate(90deg); }
 
-/* Bottom-left "Add photos" label — empty cards only */
-.bento__add-label {
-  position: absolute;
-  bottom: clamp(10px, 1.4vw, 14px);
-  left: clamp(10px, 1.4vw, 14px);
-  z-index: 3;
-  font-family: var(--sans);
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  font-weight: 500;
-  color: var(--card-fg, #1a1714);
-  opacity: 0.6;
-  pointer-events: none;
-  transition: opacity 200ms ease, transform 220ms cubic-bezier(.2,.7,.2,1);
+/* The white-bordered "photo" frame sits inside the button. */
+.collage__paper {
+  display: block;
+  position: relative;
+  width: 100%;
+  background: #fff;
+  padding: clamp(5px, 0.7vw, 8px);
+  /* A thin paper edge, soft drop shadow, and a hint of a second
+     stacked shadow give the pasted-paper feel. */
+  border-radius: 2px;
+  box-shadow:
+    0 1px 1px rgba(0,0,0,0.08),
+    0 8px 18px -8px rgba(0,0,0,0.22),
+    0 18px 28px -18px rgba(0,0,0,0.18);
 }
-.bento__card:hover .bento__add-label {
-  opacity: 0.92;
-  transform: translateX(2px);
+
+/* The inner content area carries the photo (filled) or muted neutral tile (empty). */
+.collage__inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: var(--ratio, 4 / 5);
+  background: var(--tile, #e6e3dd);
+  overflow: hidden;
 }
-.bento__card.has-photos .bento__add-label { display: none; }
-
-/* Photo-count badge — filled cards only */
-.bento__count-badge {
-  position: absolute;
-  bottom: clamp(8px, 1vw, 12px);
-  right: clamp(8px, 1vw, 12px);
-  z-index: 3;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.96);
-  color: #1a1714;
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  font-feature-settings: "tnum" 1;
-}
-.bento__card.has-photos .bento__count-badge { display: inline-flex; }
-
-/* (hover tint lives on .bento__card::before above) */
-
-/* Photo collage backgrounds */
-.bento__photos {
+.collage__inner img {
   position: absolute;
   inset: 0;
-  display: grid;
-  gap: 2px;
-  z-index: 0;
-  pointer-events: none;
-  background: var(--card-bg, #f0ebe4);
-}
-.bento__photos[data-photos="1"] { grid-template-columns: 1fr; grid-template-rows: 1fr; }
-.bento__photos[data-photos="2"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
-.bento__photos[data-photos="3"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-.bento__photos[data-photos="3"] img:first-child { grid-row: 1 / 3; }
-.bento__photos[data-photos="4"],
-.bento__photos[data-photos="5"],
-.bento__photos[data-photos="6"],
-.bento__photos[data-photos="7"],
-.bento__photos[data-photos="8"],
-.bento__photos[data-photos="9+"] {
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-}
-.bento__photos img {
-  width: 100%; height: 100%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
 
-/* Readable overlay when filled */
-.bento__card.has-photos::after {
-  content: "";
+/* Month abbreviation — small, in a corner. The only text label per piece. */
+.collage__abbr {
   position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 100%),
-    linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0) 35%);
-  z-index: 1;
+  bottom: 8px;
+  left: 8px;
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(20,17,15,0.72);
   pointer-events: none;
 }
-.bento__card.has-photos {
+.collage__item.is-filled .collage__abbr {
   color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+  opacity: 0.96;
 }
-.bento__card.has-photos .bento__plus {
-  background: rgba(255,255,255,0.95);
-  color: #1a1714;
-}
-.bento__card.has-photos .bento__count { opacity: 0.92; font-weight: 600; }
 
-/* Size-class typography overrides apply only on desktop (see media query below) */
-
-/* Grid-area assignments */
-.bento__text          { grid-area: text; }
-.bento__card--jan { grid-area: jan; }
-.bento__card--feb { grid-area: feb; }
-.bento__card--mar { grid-area: mar; }
-.bento__card--apr { grid-area: apr; }
-.bento__card--may { grid-area: may; }
-.bento__card--jun { grid-area: jun; }
-.bento__card--jul { grid-area: jul; }
-.bento__card--aug { grid-area: aug; }
-.bento__card--sep { grid-area: sep; }
-.bento__card--oct { grid-area: oct; }
-.bento__card--nov { grid-area: nov; }
-.bento__card--dec { grid-area: dec; }
-
-/* ---- Text-only top-left cell — blends with the page ---- */
-.bento__text {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 12px;
-  padding: clamp(8px, 1.2vw, 14px) clamp(8px, 1.2vw, 14px) 8px;
-  background: transparent;
-  color: var(--ink);
-  font-family: var(--sans);
-}
-.bento__logo {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: var(--ink);
-  display: inline-block;
-  flex: 0 0 auto;
-  position: relative;
-}
-.bento__logo::after {
-  content: "";
+/* Empty-state add affordance — sits in the middle of an empty tile. */
+.collage__add {
   position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--ink);
-  bottom: -8px;
-  left: 38px;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
 }
-.bento__line {
+.collage__add-stack {
+  display: grid;
+  place-items: center;
+  gap: 4px;
   font-family: var(--sans);
-  font-size: clamp(12px, 1.05vw, 14px);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(20,17,15,0.55);
   font-weight: 600;
-  line-height: 1.35;
-  letter-spacing: -0.005em;
-  color: var(--ink);
-  max-width: 220px;
 }
-.bento__line span { display: block; font-weight: 400; color: var(--ink-mute); }
+.collage__plus {
+  width: clamp(22px, 2.4vw, 28px);
+  height: clamp(22px, 2.4vw, 28px);
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(20,17,15,0.32);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 0;
+  color: rgba(20,17,15,0.65);
+  background: rgba(255,255,255,0.55);
+  transition: transform 240ms cubic-bezier(.2,.7,.2,1),
+              background 220ms ease,
+              border-color 220ms ease,
+              color 220ms ease;
+}
 
-/* Stagger reveal */
-@keyframes bentoIn {
-  from { opacity: 0; transform: translateY(14px) scale(0.98); }
-  to   { opacity: 1; transform: none; }
+/* Photo-count pill — appears on filled cards. */
+.collage__count {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.96);
+  color: #1a1714;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-feature-settings: "tnum" 1;
+  pointer-events: none;
 }
-.bento__card { animation: bentoIn 700ms cubic-bezier(.2,.7,.2,1) backwards; }
-.bento__card:nth-child(1)  { animation-delay:  20ms; }
-.bento__card:nth-child(2)  { animation-delay:  60ms; }
-.bento__card:nth-child(3)  { animation-delay: 100ms; }
-.bento__card:nth-child(4)  { animation-delay: 140ms; }
-.bento__card:nth-child(5)  { animation-delay: 180ms; }
-.bento__card:nth-child(6)  { animation-delay: 220ms; }
-.bento__card:nth-child(7)  { animation-delay: 260ms; }
-.bento__card:nth-child(8)  { animation-delay: 300ms; }
-.bento__card:nth-child(9)  { animation-delay: 340ms; }
-.bento__card:nth-child(10) { animation-delay: 380ms; }
-.bento__card:nth-child(11) { animation-delay: 420ms; }
-.bento__card:nth-child(12) { animation-delay: 460ms; }
+
+/* Hover / active states: lift, scale, partly straighten. */
+.collage__item:hover,
+.collage__item:focus-visible {
+  z-index: 999;
+  outline: none;
+  /* Reduce the rotation toward 0 (multiply by 0.4) and scale up. */
+  transform:
+    translate(-50%, -50%)
+    rotate(calc(var(--rot, 0deg) * 0.4))
+    scale(1.06)
+    translateY(-6px);
+}
+.collage__item:hover .collage__paper,
+.collage__item:focus-visible .collage__paper {
+  box-shadow:
+    0 1px 1px rgba(0,0,0,0.10),
+    0 18px 30px -8px rgba(0,0,0,0.32),
+    0 28px 40px -22px rgba(0,0,0,0.22);
+}
+.collage__item:hover .collage__plus {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+  transform: scale(1.08) rotate(90deg);
+}
+.collage__item:active {
+  transform:
+    translate(-50%, -50%)
+    rotate(calc(var(--rot, 0deg) * 0.4))
+    scale(1.02)
+    translateY(-2px);
+}
+
+/* Drag highlight (dropping files onto a piece) */
+.collage__item.is-drag .collage__paper {
+  outline: 2px dashed var(--ink);
+  outline-offset: 4px;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .bento__card { animation: none; }
+  .collage__item,
+  .collage__item:hover,
+  .collage__item:focus-visible,
+  .collage__item:active {
+    transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+    transition: none;
+  }
+}
+
+/* Stagger-reveal for collage pieces */
+@keyframes collageIn {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 14px)) rotate(var(--rot, 0deg)) scale(0.94); }
+  to   { opacity: 1; transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) scale(1); }
+}
+.collage__item { animation: collageIn 700ms cubic-bezier(.2,.7,.2,1) backwards; }
+.collage__item:nth-child(1)  { animation-delay:  20ms; }
+.collage__item:nth-child(2)  { animation-delay:  60ms; }
+.collage__item:nth-child(3)  { animation-delay: 100ms; }
+.collage__item:nth-child(4)  { animation-delay: 140ms; }
+.collage__item:nth-child(5)  { animation-delay: 180ms; }
+.collage__item:nth-child(6)  { animation-delay: 220ms; }
+.collage__item:nth-child(7)  { animation-delay: 260ms; }
+.collage__item:nth-child(8)  { animation-delay: 300ms; }
+.collage__item:nth-child(9)  { animation-delay: 340ms; }
+.collage__item:nth-child(10) { animation-delay: 380ms; }
+.collage__item:nth-child(11) { animation-delay: 420ms; }
+.collage__item:nth-child(12) { animation-delay: 460ms; }
+@media (prefers-reduced-motion: reduce) {
+  .collage__item { animation: none; }
 }
 /* ---- Compose bar at the bottom of the intro viewport ---- */
 .intro__bar {
@@ -429,30 +383,31 @@ button { font: inherit; color: inherit; }
 .compose-btn .btn__arrow { display: inline-block; transition: transform 200ms ease; }
 .compose-btn:not([disabled]):hover .btn__arrow { transform: translateX(3px); }
 
-/* Small "×" to clear a card's photos — hover only on filled cards */
-.bento__clear {
+/* Small "×" to clear a piece's photos — hover-only on filled pieces */
+.collage__clear {
   position: absolute;
-  bottom: clamp(8px, 1vw, 12px);
-  left: clamp(8px, 1vw, 12px);
+  top: -8px;
+  right: -8px;
   z-index: 5;
   width: 22px;
   height: 22px;
   border-radius: 999px;
   border: 0;
-  background: rgba(255,255,255,0.92);
-  color: #1a1714;
+  background: var(--ink);
+  color: var(--paper);
   font-size: 13px;
   line-height: 1;
   cursor: pointer;
   display: none;
   place-items: center;
   opacity: 0;
-  transform: scale(0.88);
+  transform: scale(0.85);
   transition: opacity 160ms ease, transform 160ms ease;
+  box-shadow: 0 4px 10px -2px rgba(0,0,0,0.3);
 }
-.bento__card.has-photos .bento__clear { display: grid; }
-.bento__card.has-photos:hover .bento__clear,
-.bento__card.has-photos:focus-within .bento__clear {
+.collage__item.is-filled .collage__clear { display: grid; }
+.collage__item:hover .collage__clear,
+.collage__item:focus-within .collage__clear {
   opacity: 1;
   transform: scale(1);
 }

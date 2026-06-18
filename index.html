@@ -21,9 +21,15 @@
   <!--  INTRO / UPLOAD VIEW                                          -->
   <!-- ============================================================ -->
   <main id="intro" class="intro" aria-label="Build your album">
-    <div id="monthList" class="bento" role="list">
-      <!-- text cell + 12 month cards are injected by JS as direct children -->
+    <header class="intro__head">
+      <span class="head__logo" aria-hidden="true"></span>
+      <span class="head__line">MoodAlbum<span>a year in photos.</span></span>
+    </header>
+
+    <div id="monthList" class="collage" role="list" aria-label="Twelve months">
+      <!-- 12 collage pieces are injected by JS as direct children -->
     </div>
+
     <div class="intro__bar" aria-hidden="false">
       <span id="counter" class="intro__counter">
         <span id="counterPhotos">0</span> photos &middot;

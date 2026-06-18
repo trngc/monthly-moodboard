@@ -36,80 +36,91 @@ const albumYearEl = $("#albumYear");
    ============================================================= */
 
 const MONTH_SHORT = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
-// Size class per month (matches the grid-template-areas layout)
-const MONTH_SIZE = {
-  jan: "lg",  feb: "wide", mar: "wide",
-  apr: "sm",  may: "wide", jun: "tall",
-  jul: "wide",aug: "wide", sep: "lg",
-  oct: "sm",  nov: "wide", dec: "wide",
-};
-// 12 hand-picked card themes — playful, varied, with a couple of dark
-// accents for visual rhythm. Background, text color, and accent dot.
-const MONTH_THEMES = [
-  { bg: "#0c1e3e", fg: "#f5f3ee", accent: "#5b91ff" }, // Jan — deep navy
-  { bg: "#fbe7eb", fg: "#1a1714", accent: "#e25677" }, // Feb — pale rose
-  { bg: "#dbf1bd", fg: "#1a1714", accent: "#5fa84a" }, // Mar — fresh lime
-  { bg: "#f0e5d2", fg: "#1a1714", accent: "#a8804a" }, // Apr — cream
-  { bg: "#ffd1be", fg: "#1a1714", accent: "#e8543b" }, // May — coral
-  { bg: "#bee3ff", fg: "#0a2540", accent: "#1a76d2" }, // Jun — sky
-  { bg: "#ffec5c", fg: "#1a1714", accent: "#c79100" }, // Jul — bright yellow
-  { bg: "#f1ead6", fg: "#1a1714", accent: "#9c7e34" }, // Aug — ivory
-  { bg: "#ff7d3b", fg: "#1a1714", accent: "#7a2c0a" }, // Sep — pumpkin
-  { bg: "#892029", fg: "#ffe9da", accent: "#ffb0a3" }, // Oct — maroon
-  { bg: "#ffd9b8", fg: "#1a1714", accent: "#c66e30" }, // Nov — peach
-  { bg: "#0d0d10", fg: "#f5f3ee", accent: "#9b9bb0" }, // Dec — black
+
+// Twelve hand-tuned collage positions. Each item is centered on (x%, y%)
+// inside the collage container, with a rotation, z-stack order, base width,
+// and photo aspect ratio. The cluster sits roughly within the central
+// 70% of the canvas, leaving generous negative space around it.
+const COLLAGE_POSITIONS = [
+  { x: 32, y: 16, w: 30, rot: -6,  z: 3,  ratio: "4/5"  }, // Jan — top-left
+  { x: 60, y: 13, w: 22, rot:  4,  z: 4,  ratio: "1/1"  }, // Feb — top-center
+  { x: 80, y: 20, w: 22, rot:  7,  z: 5,  ratio: "3/4"  }, // Mar — top-right
+  { x: 22, y: 38, w: 26, rot: -3,  z: 6,  ratio: "4/5"  }, // Apr — left
+  { x: 47, y: 36, w: 24, rot: -2,  z: 7,  ratio: "1/1"  }, // May — mid-back
+  { x: 73, y: 44, w: 30, rot: -5,  z: 8,  ratio: "3/4"  }, // Jun — right
+  { x: 38, y: 56, w: 30, rot:  3,  z: 9,  ratio: "4/5"  }, // Jul — center
+  { x: 64, y: 62, w: 28, rot:  6,  z: 10, ratio: "5/4"  }, // Aug — mid-right-front
+  { x: 84, y: 66, w: 18, rot: -8,  z: 11, ratio: "3/4"  }, // Sep — right-edge
+  { x: 22, y: 64, w: 22, rot:  2,  z: 12, ratio: "1/1"  }, // Oct — bottom-left
+  { x: 38, y: 80, w: 28, rot: -4,  z: 13, ratio: "5/4"  }, // Nov — bottom-left-center
+  { x: 66, y: 84, w: 26, rot:  6,  z: 14, ratio: "1/1"  }, // Dec — bottom-center-right
+];
+
+// Muted neutral palette for empty placeholder tiles — paper-like, not bright.
+const EMPTY_TILES = [
+  "#ece6d6", "#dad3c2", "#e7e1d2", "#cbc5b6",
+  "#d2cdbe", "#dfd9c8", "#c2bba9", "#e6dfcc",
+  "#d8d2c1", "#cfc8b6", "#bdb6a4", "#e3ddcb",
 ];
 
 function renderMonths() {
   monthList.innerHTML = "";
 
-  // ---- Text-only top-left cell — direct grid item ----
-  const textCell = document.createElement("div");
-  textCell.className = "bento__text";
-  textCell.setAttribute("role", "listitem");
-  textCell.innerHTML = `
-    <span class="bento__logo" aria-hidden="true"></span>
-    <span class="bento__line">MoodAlbum<span>a year in photos.</span></span>
-  `;
-  monthList.appendChild(textCell);
-
-  // ---- 12 month cards ----
   state.months.forEach((m, idx) => {
     const short = MONTH_SHORT[idx];
-    const t = MONTH_THEMES[idx];
+    const pos = COLLAGE_POSITIONS[idx];
+    const tile = EMPTY_TILES[idx];
+    const filled = m.photos.length > 0;
 
-    const card = document.createElement("button");
-    card.type = "button";
-    card.className = `bento__card bento__card--${short}`;
-    card.setAttribute("role", "listitem");
-    card.dataset.month = idx;
-    card.style.setProperty("--card-bg", t.bg);
-    card.style.setProperty("--card-fg", t.fg);
-    card.style.setProperty("--card-accent", t.accent);
-    card.setAttribute(
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = `collage__item ${filled ? "is-filled" : "is-empty"}`;
+    item.setAttribute("role", "listitem");
+    item.dataset.month = idx;
+    item.style.setProperty("--x",   `${pos.x}%`);
+    item.style.setProperty("--y",   `${pos.y}%`);
+    item.style.setProperty("--w",   `${pos.w}%`);
+    item.style.setProperty("--rot", `${pos.rot}deg`);
+    item.style.setProperty("--z",   pos.z);
+    item.style.setProperty("--ratio", pos.ratio);
+    item.style.setProperty("--tile",  tile);
+    item.setAttribute(
       "aria-label",
       `${m.name}: ${m.photos.length} photo${m.photos.length === 1 ? "" : "s"}. Tap to add photos.`
     );
 
-    card.innerHTML = `
-      <div class="bento__photos" data-photos="0"></div>
-      <span class="bento__abbr">${short.toUpperCase()}</span>
-      <span class="bento__add-icon" aria-hidden="true">+</span>
-      <span class="bento__add-label">Add photos</span>
-      <span class="bento__count-badge" aria-hidden="true">${m.photos.length}</span>
+    const photoTag = filled
+      ? `<img src="${m.photos[0].url}" alt="" />`
+      : `
+        <span class="collage__add" aria-hidden="true">
+          <span class="collage__add-stack">
+            <span class="collage__plus">+</span>
+            <span>Add</span>
+          </span>
+        </span>`;
+
+    const countTag = filled
+      ? `<span class="collage__count" aria-hidden="true">${m.photos.length}</span>`
+      : "";
+
+    item.innerHTML = `
+      <span class="collage__paper">
+        <span class="collage__inner">
+          ${photoTag}
+          <span class="collage__abbr">${short.toUpperCase()}</span>
+          ${countTag}
+        </span>
+      </span>
       <input type="file" accept="image/*" multiple hidden data-input="${idx}" />
-      <button type="button" class="bento__clear" aria-label="Clear ${m.name}" tabindex="-1">&times;</button>
+      <span class="collage__clear" role="button" tabindex="-1" aria-label="Clear ${m.name}">&times;</span>
     `;
-    monthList.appendChild(card);
+    monthList.appendChild(item);
 
-    paintBentoPhotos(card, m.photos);
-    card.classList.toggle("has-photos", m.photos.length > 0);
+    const input = item.querySelector(`[data-input="${idx}"]`);
+    const clearBtn = item.querySelector(".collage__clear");
 
-    const input = card.querySelector(`[data-input="${idx}"]`);
-    const clearBtn = card.querySelector(".bento__clear");
-
-    card.addEventListener("click", (e) => {
-      if (e.target.closest(".bento__clear")) return;
+    item.addEventListener("click", (e) => {
+      if (e.target.closest(".collage__clear")) return;
       input.click();
     });
     input.addEventListener("change", (e) => {
@@ -125,37 +136,21 @@ function renderMonths() {
       renderMonths();
     });
 
-    card.addEventListener("dragenter", (e) => { e.preventDefault(); card.classList.add("is-drag"); });
-    card.addEventListener("dragover", (e) => { e.preventDefault(); });
-    card.addEventListener("dragleave", (e) => {
-      if (!card.contains(e.relatedTarget)) card.classList.remove("is-drag");
+    item.addEventListener("dragenter", (e) => { e.preventDefault(); item.classList.add("is-drag"); });
+    item.addEventListener("dragover", (e) => { e.preventDefault(); });
+    item.addEventListener("dragleave", (e) => {
+      if (!item.contains(e.relatedTarget)) item.classList.remove("is-drag");
     });
-    card.addEventListener("drop", (e) => {
+    item.addEventListener("drop", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      card.classList.remove("is-drag");
+      item.classList.remove("is-drag");
       const files = [...(e.dataTransfer?.files || [])].filter(isImage);
       if (files.length) handleFiles(files, idx);
     });
   });
-  refreshCounters();
-}
 
-function paintBentoPhotos(card, photos) {
-  const photosEl = card.querySelector(".bento__photos");
-  photosEl.innerHTML = "";
-  if (photos.length === 0) {
-    photosEl.dataset.photos = "0";
-    return;
-  }
-  const slots = Math.min(photos.length, 4);
-  photosEl.dataset.photos = photos.length >= 9 ? "9+" : String(photos.length);
-  for (let i = 0; i < slots; i++) {
-    const img = document.createElement("img");
-    img.src = photos[i].url;
-    img.alt = "";
-    photosEl.appendChild(img);
-  }
+  refreshCounters();
 }
 
 function refreshCounters() {
