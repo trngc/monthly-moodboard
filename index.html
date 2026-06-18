@@ -3,28 +3,28 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f6f3ee" />
-  <meta name="description" content="MoodAlbum — a year of photos, organized by month, styled like an editorial lookbook." />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="description" content="MoodAlbum — a year of photos in twelve months, arranged as scrapbook calendars." />
   <title>MoodAlbum — a year in photos</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Serif+Display:ital@0;1&family=Italiana&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&family=Libre+Caslon+Display&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;700&family=Manrope:wght@300;400;500;700&family=Work+Sans:wght@300;400;500;700&family=Archivo:wght@300;400;500;700&family=Caveat:wght@400;500;600;700&family=Kalam:wght@300;400;700&family=Shadows+Into+Light&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Caveat:wght@400;500;600;700&family=Italianno&display=swap"
   />
 
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- ============================================================ -->
-  <!--  INTRO / UPLOAD VIEW                                          -->
-  <!-- ============================================================ -->
-  <main id="intro" class="intro" aria-label="Build your album">
+  <!-- ============================================================
+       Step 1 — BENTO LANDING
+       ============================================================ -->
+  <main id="intro" class="view view--intro" aria-label="Choose a month">
     <div id="monthList" class="bento" role="list">
-      <!-- text cell + 12 month cards are injected by JS as direct children -->
+      <!-- text cell + 12 month cards injected by JS -->
     </div>
-    <div class="intro__bar" aria-hidden="false">
+    <div class="intro__bar">
       <span id="counter" class="intro__counter">
         <span id="counterPhotos">0</span> photos &middot;
         <span id="counterMonths">0</span>/12 months
@@ -35,30 +35,88 @@
       </button>
     </div>
 
-    <!-- Hidden global file input — kept so existing handlers still bind cleanly -->
+    <!-- Hidden global file input kept for parity with existing handlers -->
     <input type="file" id="globalInput" accept="image/*" multiple hidden />
     <div id="globalDrop" hidden></div>
   </main>
 
-  <!-- ============================================================ -->
-  <!--  ALBUM VIEW (scrapbook moodboard calendars)                   -->
-  <!-- ============================================================ -->
-  <main id="album" class="album" hidden aria-label="Your moodboards">
-    <nav class="album__nav" aria-label="Album navigation">
-      <button id="backBtn" class="album__back" type="button">&larr; Edit</button>
-      <p class="album__brand">MoodAlbum</p>
-      <span class="album__year" id="albumYear" aria-hidden="true"></span>
-    </nav>
+  <!-- ============================================================
+       Step 2 — MONTH DETAIL
+       ============================================================ -->
+  <main id="detail" class="view view--detail" hidden aria-label="Month detail">
+    <header class="detail__head">
+      <button id="detailBack" class="iconbtn" type="button" aria-label="Back to months">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path d="M14 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="detail__titlewrap">
+        <p class="detail__eyebrow"><span id="detailIndex">01</span> &middot; <span id="detailYearLabel">2026</span></p>
+        <h2 class="detail__title" id="detailTitle">January</h2>
+      </div>
+      <span class="detail__count" id="detailCount">0 photos</span>
+    </header>
 
-    <div id="boards" class="boards">
-      <!-- one .board per non-empty month, injected by JS -->
-    </div>
+    <section class="carousel" aria-label="Photos">
+      <div class="carousel__track" id="detailTrack">
+        <!-- photo cards + add-card injected by JS -->
+      </div>
+      <div class="carousel__dots" id="detailDots" aria-hidden="true"></div>
+    </section>
+
+    <footer class="detail__foot">
+      <p class="detail__hint">Assign a day to each photo to place it on the calendar.</p>
+      <button id="continueBtn" class="primary-btn" type="button">
+        Continue to calendar
+        <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+      </button>
+    </footer>
+
+    <input type="file" id="detailUpload" accept="image/*" multiple hidden />
   </main>
 
-  <!-- Hidden working canvas for color analysis -->
+  <!-- ============================================================
+       Step 3 — CALENDAR (continuous horizontal pager, one per month)
+       ============================================================ -->
+  <main id="album" class="view view--album" hidden aria-label="Monthly calendar">
+    <header class="album__head">
+      <button id="albumBack" class="iconbtn" type="button" aria-label="Back">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path d="M14 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="album__titlewrap">
+        <p class="album__eyebrow" id="albumYear">2026</p>
+        <h2 class="album__title" id="albumMonth">January</h2>
+      </div>
+      <button id="albumExport" class="iconbtn iconbtn--label" type="button" aria-label="Save board as PNG">
+        Save PNG
+      </button>
+    </header>
+
+    <div id="pager" class="pager" role="region" aria-label="Months">
+      <!-- one .cal-page per month, injected by JS -->
+    </div>
+
+    <footer class="album__foot">
+      <button id="prevMonth" class="iconbtn" type="button" aria-label="Previous month">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path d="M14 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span id="pagerLabel" class="album__pagerlabel">01 / 12</span>
+      <button id="nextMonth" class="iconbtn" type="button" aria-label="Next month">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path d="M10 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </footer>
+  </main>
+
+  <!-- Hidden working canvas for the existing color analysis -->
   <canvas id="workCanvas" width="80" height="80" hidden></canvas>
 
-  <!-- html2canvas: client-side rasterizer used only for the "Save PNG" button -->
+  <!-- html2canvas: client-side rasterizer for "Save PNG" -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 
   <script src="app.js" defer></script>
