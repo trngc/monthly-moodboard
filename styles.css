@@ -288,6 +288,9 @@ input, select, textarea { font: inherit; color: inherit; }
 }
 .bento__photos img { width: 100%; height: 100%; object-fit: cover; }
 
+/* JAN only: shift the crop downward so the pool float near the bottom shows. */
+.bento__card--jan .bento__photos img { object-position: center 80%; }
+
 .bento__card.has-photos::after {
   content: "";
   position: absolute;

@@ -190,6 +190,9 @@ function ensureSeeded(monthIdx) {
 
   const offsets = [0, 4, 8, 11];
   offsets.forEach((off, i) => {
+    // June (month 06) only: start with just the last 2 default photos —
+    // drop the first two, keep the latter two (their days/notes unchanged).
+    if (monthIdx === 5 && i < 2) return;
     const slot = placeholderPool[(monthIdx + off) % Math.max(1, placeholderPool.length)];
     if (!slot) return;
     const file = new File([slot.blob], `placeholder-${monthIdx}-${i}.jpg`, {
