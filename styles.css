@@ -1,0 +1,905 @@
+/* =============================================================
+   MoodAlbum — minimal, white-background, 3-step flow
+   ============================================================= */
+
+:root {
+  --bg: #ffffff;
+  --ink: #14110f;
+  --ink-2: #2a2520;
+  --ink-mute: #8a847b;
+  --rule: rgba(20, 17, 15, 0.10);
+  --accent: #14110f;
+
+  --sans: "Inter", system-ui, -apple-system, sans-serif;
+  --hand: "Caveat", cursive;
+  --script: "Italianno", cursive;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 72px;
+  --edge: clamp(14px, 3vw, 24px);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+body {
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+img { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; cursor: pointer; }
+input, select, textarea { font: inherit; color: inherit; }
+
+::selection { background: var(--ink); color: #fff; }
+
+[hidden] { display: none !important; }
+
+.view {
+  min-height: 100dvh;
+  background: #ffffff;
+}
+
+/* Shared icon button */
+.iconbtn {
+  width: 36px; height: 36px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  color: var(--ink);
+  padding: 0;
+  transition: background 200ms ease, transform 200ms ease;
+}
+.iconbtn:hover { background: #f3f1ee; }
+.iconbtn:active { transform: scale(0.96); }
+.iconbtn--label {
+  width: auto;
+  padding: 0 14px;
+  height: 36px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Shared primary button */
+.primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ink);
+  color: #fff;
+  border: 0;
+  padding: 14px 20px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+.primary-btn[disabled] { opacity: 0.3; cursor: not-allowed; }
+.primary-btn:not([disabled]):hover { transform: translateY(-1px); }
+.primary-btn .btn__arrow { display: inline-block; transition: transform 200ms ease; }
+.primary-btn:not([disabled]):hover .btn__arrow { transform: translateX(3px); }
+
+/* =============================================================
+   STEP 1 — INTRO / BENTO
+   ============================================================= */
+
+.view--intro {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding:
+    max(16px, env(safe-area-inset-top, 16px))
+    var(--edge)
+    max(16px, env(safe-area-inset-bottom, 16px));
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.6vw, 16px);
+}
+
+.bento {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  gap: clamp(8px, 1.6vw, 14px);
+  min-height: 0;
+  grid-template-areas:
+    "text feb feb"
+    "jan  jan  mar"
+    "jan  jan  apr"
+    "may  jun  jun"
+    "jul  aug  sep"
+    "oct  nov  dec";
+}
+
+.bento__card {
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  border-radius: clamp(16px, 2vw, 26px);
+  container-type: inline-size;
+  container-name: bento;
+  background: var(--card-bg, #f3f1ee);
+  color: var(--card-fg, #14110f);
+  font-family: var(--sans);
+  text-align: left;
+  overflow: hidden;
+  display: block;
+  transition: transform 220ms cubic-bezier(.2,.7,.2,1),
+              box-shadow 220ms ease,
+              filter 220ms ease;
+  -webkit-tap-highlight-color: transparent;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.bento__card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+  background: rgba(255,255,255,0);
+  pointer-events: none;
+  z-index: 2;
+  transition: background 220ms ease;
+}
+.bento__card:hover { transform: translateY(-3px) scale(1.012); box-shadow: 0 22px 34px -18px rgba(0,0,0,0.18); }
+.bento__card:hover::before { background: rgba(255,255,255,0.10); }
+.bento__card.has-photos:hover::before { background: rgba(0,0,0,0.08); }
+.bento__card:active { transform: translateY(0) scale(0.985); }
+.bento__card:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+.bento__abbr {
+  position: absolute;
+  top: clamp(10px, 1.4vw, 16px);
+  left: clamp(10px, 1.4vw, 16px);
+  z-index: 3;
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--card-fg, #14110f);
+  opacity: 0.78;
+  pointer-events: none;
+}
+.bento__card.has-photos .bento__abbr {
+  color: #fff;
+  opacity: 0.94;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.34);
+}
+
+.bento__add-icon {
+  position: absolute;
+  top: clamp(8px, 1vw, 12px);
+  right: clamp(8px, 1vw, 12px);
+  z-index: 3;
+  width: clamp(24px, 2.4vw, 30px);
+  height: clamp(24px, 2.4vw, 30px);
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--card-fg, #14110f);
+  color: var(--card-bg, #fff);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 0;
+  pointer-events: none;
+  opacity: 0.82;
+  transition: transform 220ms cubic-bezier(.2,.7,.2,1), background 220ms ease, opacity 220ms ease;
+}
+.bento__card.has-photos .bento__add-icon {
+  background: rgba(255,255,255,0.94);
+  color: #14110f;
+  opacity: 0.96;
+}
+.bento__card:hover .bento__add-icon {
+  opacity: 1;
+  transform: scale(1.12) rotate(90deg);
+}
+
+.bento__add-label {
+  position: absolute;
+  bottom: clamp(10px, 1.4vw, 14px);
+  left: clamp(10px, 1.4vw, 14px);
+  z-index: 3;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  color: var(--card-fg, #14110f);
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 220ms cubic-bezier(.2,.7,.2,1);
+}
+.bento__card:hover .bento__add-label { opacity: 0.92; transform: translateX(2px); }
+.bento__card.has-photos .bento__add-label { display: none; }
+
+.bento__count-badge {
+  position: absolute;
+  bottom: clamp(8px, 1vw, 12px);
+  right: clamp(8px, 1vw, 12px);
+  z-index: 3;
+  min-width: 22px; height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.96);
+  color: #14110f;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.bento__card.has-photos .bento__count-badge { display: inline-flex; }
+
+.bento__photos {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  gap: 2px;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--card-bg, #f3f1ee);
+}
+.bento__photos[data-photos="1"] { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+.bento__photos[data-photos="2"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+.bento__photos[data-photos="3"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.bento__photos[data-photos="3"] img:first-child { grid-row: 1 / 3; }
+.bento__photos[data-photos="4"],
+.bento__photos[data-photos="5"],
+.bento__photos[data-photos="6"],
+.bento__photos[data-photos="7"],
+.bento__photos[data-photos="8"],
+.bento__photos[data-photos="9+"] {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.bento__photos img { width: 100%; height: 100%; object-fit: cover; }
+
+/* JAN only: shift the crop downward so the pool float near the bottom shows. */
+.bento__card--jan .bento__photos img { object-position: center 80%; }
+
+.bento__card.has-photos::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.45) 100%),
+    linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 30%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.bento__text          { grid-area: text; }
+.bento__card--jan { grid-area: jan; }
+.bento__card--feb { grid-area: feb; }
+.bento__card--mar { grid-area: mar; }
+.bento__card--apr { grid-area: apr; }
+.bento__card--may { grid-area: may; }
+.bento__card--jun { grid-area: jun; }
+.bento__card--jul { grid-area: jul; }
+.bento__card--aug { grid-area: aug; }
+.bento__card--sep { grid-area: sep; }
+.bento__card--oct { grid-area: oct; }
+.bento__card--nov { grid-area: nov; }
+.bento__card--dec { grid-area: dec; }
+
+.bento__text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: clamp(8px, 1.2vw, 14px) clamp(8px, 1.2vw, 14px) 8px;
+  background: transparent;
+  color: var(--ink);
+}
+.bento__logo {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: var(--ink);
+  flex: 0 0 auto;
+  position: relative;
+}
+.bento__logo::after {
+  content: "";
+  position: absolute;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--ink);
+  bottom: -8px; left: 36px;
+}
+.bento__line {
+  font-family: var(--sans);
+  font-size: clamp(12px, 1.05vw, 14px);
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+  max-width: 220px;
+}
+.bento__line span { display: block; font-weight: 400; color: var(--ink-mute); }
+
+/* Bottom bar */
+.intro__bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px clamp(4px, 1vw, 8px) 0;
+}
+.intro__counter {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-weight: 500;
+}
+.compose-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--ink); color: #fff; border: 0;
+  padding: 11px 16px;
+  font-family: var(--sans);
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+.compose-btn[disabled] { opacity: 0.32; cursor: not-allowed; }
+.compose-btn:not([disabled]):hover { transform: translateY(-1px); }
+.compose-btn .btn__arrow { transition: transform 200ms ease; }
+.compose-btn:not([disabled]):hover .btn__arrow { transform: translateX(3px); }
+
+/* Desktop bento variant */
+@media (min-width: 720px) {
+  .bento {
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: 1fr;
+    gap: clamp(12px, 1.2vw, 18px);
+    grid-template-areas:
+      "text feb feb apr mar"
+      "jan  jan oct may may"
+      "jan  jan jun jul jul"
+      "aug  sep nov dec dec";
+  }
+}
+
+/* =============================================================
+   STEP 2 — MONTH DETAIL (carousel + day/note assignment)
+   ============================================================= */
+
+.view--detail {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: #fff;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.detail__head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: clamp(14px, 2.4vw, 22px) var(--edge) clamp(8px, 1.6vw, 14px);
+}
+.detail__titlewrap { display: grid; gap: 2px; }
+.detail__eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin: 0;
+  font-weight: 600;
+}
+.detail__title {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: clamp(28px, 6vw, 40px);
+  line-height: 1;
+  letter-spacing: -0.015em;
+  margin: 0;
+  color: var(--ink);
+}
+.detail__count {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+/* Carousel */
+.carousel {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0;
+}
+.carousel__track {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 6px var(--edge) 22px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+  align-items: stretch;
+}
+.carousel__track::-webkit-scrollbar { display: none; }
+
+.carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px var(--edge) 8px;
+  height: 18px;
+}
+.carousel__dots span {
+  width: 5px; height: 5px;
+  background: var(--ink-mute);
+  border-radius: 50%;
+  opacity: 0.32;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.carousel__dots span.is-active { opacity: 1; transform: scale(1.4); }
+
+/* Photo card in carousel */
+.pcard {
+  flex: 0 0 78%;
+  max-width: 320px;
+  min-width: 240px;
+  scroll-snap-align: center;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 22px;
+  padding: 10px 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+.pcard__photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  background: #f5f3ef;
+  overflow: hidden;
+  border-radius: 12px;
+}
+.pcard__photo img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.pcard__remove {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 26px; height: 26px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(255,255,255,0.92);
+  color: #14110f;
+  font-size: 13px;
+  display: grid; place-items: center;
+  opacity: 0; transform: scale(0.85);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.pcard:hover .pcard__remove,
+.pcard:focus-within .pcard__remove { opacity: 1; transform: scale(1); }
+
+.pcard__meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 10px;
+  padding: 2px 4px;
+}
+.pcard__label {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  align-self: center;
+}
+.pcard__day {
+  width: 64px;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  padding: 2px 0;
+  font-size: 14px;
+  font-weight: 600;
+  background: transparent;
+  color: var(--ink);
+  -moz-appearance: textfield;
+}
+.pcard__day::-webkit-outer-spin-button,
+.pcard__day::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.pcard__note {
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  padding: 2px 0;
+  font-family: var(--hand);
+  font-size: 18px;
+  background: transparent;
+  color: var(--ink);
+  width: 100%;
+}
+.pcard__note::placeholder { color: var(--ink-mute); opacity: 0.5; }
+
+/* Add-photo tile at end of carousel */
+.pcard--add {
+  flex: 0 0 78%;
+  max-width: 320px;
+  min-width: 240px;
+  scroll-snap-align: center;
+  background: #fff;
+  border: 1px dashed var(--ink-mute);
+  border-radius: 22px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--ink-mute);
+  padding: 16px;
+  cursor: pointer;
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+.pcard--add:hover { background: #f8f7f3; color: var(--ink); border-color: var(--ink); }
+.pcard--add .pcard__plus {
+  width: 44px; height: 44px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  display: grid; place-items: center;
+  font-size: 22px; font-weight: 300;
+  line-height: 0;
+  margin: 0 auto 12px;
+}
+.pcard--add .pcard__add-label {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.detail__foot {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px var(--edge) 22px;
+  border-top: 1px solid var(--rule);
+  text-align: center;
+}
+.detail__hint {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-mute);
+}
+
+/* =============================================================
+   STEP 3 — CALENDAR (pager of monthly scrapbook calendars)
+   ============================================================= */
+
+.view--album {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: #fff;
+}
+
+.album__head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: clamp(12px, 2vw, 18px) var(--edge);
+  background: #fff;
+  border-bottom: 1px solid var(--rule);
+  position: sticky; top: 0;
+  z-index: 30;
+}
+.album__titlewrap { text-align: center; }
+.album__eyebrow {
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-weight: 600;
+}
+.album__title {
+  margin: 0;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: clamp(20px, 4vw, 26px);
+  letter-spacing: -0.01em;
+}
+
+/* Pager — horizontal scroll with snap, one calendar per "page" */
+.pager {
+  flex: 1 1 auto;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+  background: #fff;
+}
+.pager::-webkit-scrollbar { display: none; }
+
+.cal-page {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  min-width: 100%;
+  position: relative;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(14px, 2.4vw, 22px) var(--edge) clamp(22px, 4vw, 36px);
+}
+
+/* The capture area (what gets exported) */
+.cal-capture {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  flex: 1 1 auto;
+  min-height: 0;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+/* Full-bleed bg image behind the calendar card */
+.cal-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+.cal-bg__tint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 60%, rgba(0,0,0,0.05) 100%);
+  z-index: 1;
+}
+
+/* Calendar card */
+.cal-card {
+  position: relative;
+  z-index: 2;
+  background: #fff;
+  border-radius: 18px;
+  margin: clamp(40px, 8vw, 64px) clamp(8px, 2vw, 20px) clamp(60px, 10vw, 80px);
+  padding: 18px 14px 16px;
+  box-shadow: 0 14px 30px -14px rgba(0,0,0,0.18), 0 2px 4px rgba(0,0,0,0.05);
+  color: var(--ink);
+  font-family: var(--sans);
+}
+.cal-card__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--ink-mute);
+  margin-bottom: 4px;
+}
+.cal-card__crumb {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.cal-card__top-spacer { flex: 1; }
+.cal-card__icon {
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  color: var(--ink);
+  opacity: 0.65;
+  font-size: 14px;
+}
+.cal-card__title {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: clamp(24px, 5vw, 32px);
+  letter-spacing: -0.01em;
+  margin: 0 0 10px;
+  color: var(--ink);
+}
+.cal-card__title em {
+  font-family: var(--hand);
+  font-weight: 500;
+  font-style: normal;
+  font-size: 0.78em;
+  margin-left: 6px;
+  color: var(--ink-mute);
+}
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.cal-weekdays span { text-align: center; padding: 4px 0; }
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(54px, auto);
+  position: relative;
+}
+.cal-cell {
+  border-right: 1px solid rgba(20,17,15,0.05);
+  border-bottom: 1px solid rgba(20,17,15,0.05);
+  padding: 6px 5px;
+  position: relative;
+  min-height: 54px;
+  font-size: 12px;
+  color: var(--ink);
+}
+.cal-cell:nth-child(7n) { border-right: 0; }
+.cal-cell--blank { color: rgba(20,17,15,0.18); }
+.cal-num { display: inline-block; line-height: 1; }
+
+/* Decor layer for polaroids + stickers (absolutely positioned overlay) */
+.cal-decor {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.cal-decor > * { pointer-events: auto; }
+
+.polaroid {
+  position: absolute;
+  background: #fff;
+  padding: 7px 7px 26px;
+  border-radius: 2px;
+  box-shadow:
+    0 1px 1px rgba(0,0,0,0.08),
+    0 8px 18px -6px rgba(0,0,0,0.28);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: box-shadow 200ms ease;
+}
+.polaroid:active { cursor: grabbing; }
+.polaroid.is-dragging,
+.polaroid.is-selected {
+  z-index: 200;
+  box-shadow:
+    0 1px 1px rgba(0,0,0,0.12),
+    0 18px 32px -6px rgba(0,0,0,0.38);
+}
+.polaroid img {
+  display: block;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  background: #f0ebe4;
+  pointer-events: none;
+}
+.polaroid figcaption {
+  position: absolute;
+  left: 8px; right: 8px;
+  bottom: 6px;
+  font-family: var(--hand);
+  font-size: 14px;
+  line-height: 1;
+  color: #14110f;
+  text-align: center;
+  pointer-events: none;
+}
+.polaroid .clip {
+  position: absolute;
+  width: 28px; height: 28px;
+  z-index: 1;
+  pointer-events: none;
+}
+.polaroid .clip--top { top: -10px; left: 50%; transform: translateX(-50%) rotate(-6deg); }
+.polaroid .clip--tl  { top: -10px; left: 12%; transform: rotate(-22deg); }
+.polaroid .clip--tr  { top: -10px; right: 8%;  transform: rotate(20deg); }
+
+/* Rotation handle that appears on tap-select */
+.rot-handle {
+  position: absolute;
+  top: -14px; right: -14px;
+  width: 24px; height: 24px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  display: none;
+  place-items: center;
+  cursor: grab;
+  z-index: 3;
+  touch-action: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.polaroid.is-selected .rot-handle,
+.sticker.is-selected .rot-handle { display: grid; }
+.rot-handle svg { width: 12px; height: 12px; }
+
+/* Sticker */
+.sticker {
+  position: absolute;
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.18));
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.sticker:active { cursor: grabbing; }
+.sticker.is-dragging,
+.sticker.is-selected { z-index: 200; }
+
+/* Album bottom navigation */
+.album__foot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px var(--edge) calc(env(safe-area-inset-bottom, 0) + 12px);
+  border-top: 1px solid var(--rule);
+  background: #fff;
+}
+.album__pagerlabel {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-mute);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pager, .carousel__track { scroll-behavior: auto; }
+  .bento__card, .polaroid, .sticker { transition: none; }
+}
