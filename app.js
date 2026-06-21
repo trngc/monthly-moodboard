@@ -273,7 +273,6 @@ function renderMonths() {
       <span class="bento__abbr">${short.toUpperCase()}</span>
       <span class="bento__add-icon" aria-hidden="true">+</span>
       <span class="bento__add-label">Add photos</span>
-      <span class="bento__count-badge" aria-hidden="true">${m.photos.length}</span>
     `;
     monthList.appendChild(card);
 
@@ -290,14 +289,12 @@ function paintBentoPhotos(card, photos) {
   const el = card.querySelector(".bento__photos");
   el.innerHTML = "";
   if (photos.length === 0) { el.dataset.photos = "0"; return; }
-  const slots = Math.min(photos.length, 4);
-  el.dataset.photos = photos.length >= 9 ? "9+" : String(photos.length);
-  for (let i = 0; i < slots; i++) {
-    const img = document.createElement("img");
-    img.src = photos[i].url;
-    img.alt = "";
-    el.appendChild(img);
-  }
+  // Single hero photo — the month's first/main image fills the whole card.
+  el.dataset.photos = "1";
+  const img = document.createElement("img");
+  img.src = photos[0].url;
+  img.alt = "";
+  el.appendChild(img);
 }
 
 function refreshCounters() {
@@ -880,4 +877,9 @@ albumExport.addEventListener("click", async () => {
    ============================================================= */
 
 renderMonths();
-loadPlaceholders();
+loadPlaceholders().then(() => {
+  // Seed every month eagerly so each bento card shows its photo
+  // (photo-01 → Jan … photo-12 → Dec) on first load, no tap required.
+  for (let i = 0; i < MONTHS.length; i++) ensureSeeded(i);
+  renderMonths();
+});
