@@ -37,7 +37,16 @@ const MONTH_THEMES = [
 const PLACEHOLDER_PHOTOS = MONTH_SHORT.map((_, i) =>
   `placeholders/photo-${String(i + 1).padStart(2, "0")}.jpg`
 );
-const PLACEHOLDER_BG = "placeholders/calendar-bg.jpg";
+const PLACEHOLDER_BG = "placeholders/calendar-bg.jpg"; // fallback if a rotated bg is missing
+
+/* Five calendar backgrounds, rotated across the 12 months:
+   Jan→01, Feb→02 … May→05, Jun→01, Jul→02 … cycling every 5 months. */
+const PLACEHOLDER_BGS = [1, 2, 3, 4, 5].map((n) =>
+  `placeholders/calendar-bg-0${n}.jpg`
+);
+function bgForMonth(monthIdx) {
+  return PLACEHOLDER_BGS[monthIdx % PLACEHOLDER_BGS.length];
+}
 
 /* Stickers auto-scattered onto each calendar — Unicode emoji, no external assets. */
 const STICKER_SET = [
@@ -492,7 +501,8 @@ function buildCalPage(month, idx) {
 
   page.innerHTML = `
     <div class="cal-capture" data-capture>
-      <img class="cal-bg" src="${PLACEHOLDER_BG}" alt="" />
+      <img class="cal-bg" src="${bgForMonth(idx)}" alt=""
+           onerror="this.onerror=null;this.src='${PLACEHOLDER_BG}'" />
       <div class="cal-bg__tint"></div>
 
       <div class="cal-card">
