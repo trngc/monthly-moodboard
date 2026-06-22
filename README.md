@@ -1,4 +1,4 @@
-# MoodAlbum
+# Monthly Moodboard
 
 A single-page web app that turns a year of photos into a private, editorial
 lookbook — organized by month, themed entirely by the colors and light of the
