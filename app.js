@@ -472,11 +472,12 @@ function renderAlbum() {
     pager.appendChild(buildCalPage(m, idx));
   });
   updateAlbumHeader();
-  // Ensure decor placement uses real cell rects after layout
-  requestAnimationFrame(() => {
-    pager.querySelectorAll(".cal-page").forEach(decoratePage);
-  });
 }
+
+const ROMAN_NUMERALS = [
+  "I", "II", "III", "IV", "V", "VI",
+  "VII", "VIII", "IX", "X", "XI", "XII",
+];
 
 function buildCalPage(month, idx) {
   const page = document.createElement("section");
@@ -484,255 +485,103 @@ function buildCalPage(month, idx) {
   page.dataset.monthIdx = idx;
 
   const daysInMonth = new Date(state.year, idx + 1, 0).getDate();
-  // Mon = 0 ... Sun = 6
-  const firstDay = (new Date(state.year, idx, 1).getDay() + 6) % 7;
+  const firstDay = (new Date(state.year, idx, 1).getDay() + 6) % 7; // Mon=0..Sun=6
+  const photosByDay = new Map();
+  for (const p of month.photos) {
+    if (p.day) photosByDay.set(p.day, (photosByDay.get(p.day) || 0) + 1);
+  }
 
+  // Photos sorted by day (no day → after, in original order)
+  const ordered = [...month.photos].sort((a, b) => {
+    const da = a.day == null ? 99 : a.day;
+    const db = b.day == null ? 99 : b.day;
+    return da - db;
+  });
+
+  const tilesHtml = ordered.map((p, i) => {
+    const dayLabel = p.day != null ? `Day ${String(p.day).padStart(2, "0")}` : "Unfiled";
+    const note = (p.note || "").trim();
+    return `
+      <figure class="mb-tile">
+        <div class="mb-tile__frame"><img src="${p.url}" alt="" /></div>
+        <figcaption class="mb-tile__caption">
+          <span class="mb-tile__day">${escapeHtml(dayLabel)}</span>
+          <span class="mb-tile__note">${escapeHtml(note)}</span>
+          <span class="mb-tile__index">${String(i + 1).padStart(2, "0")} / ${String(ordered.length).padStart(2, "0")}</span>
+        </figcaption>
+      </figure>
+    `;
+  }).join("");
+
+  // Calendar ribbon — small grid that marks days that have photos
   const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
-  const cellsHtml = [];
+  const ribbonCells = [];
   for (let i = 0; i < totalCells; i++) {
     const dayNum = i - firstDay + 1;
     const blank = dayNum < 1 || dayNum > daysInMonth;
-    cellsHtml.push(`
-      <div class="cal-cell ${blank ? "cal-cell--blank" : ""}" data-day="${blank ? "" : dayNum}">
-        ${blank ? "" : `<span class="cal-num">${dayNum}</span>`}
-      </div>
-    `);
+    if (blank) {
+      ribbonCells.push(`<div class="mb-ribbon__cell mb-ribbon__cell--blank"></div>`);
+    } else {
+      const marked = photosByDay.has(dayNum);
+      ribbonCells.push(`
+        <div class="mb-ribbon__cell ${marked ? "mb-ribbon__cell--marked" : ""}">
+          ${String(dayNum).padStart(2, "0")}
+        </div>
+      `);
+    }
   }
+
+  const taggedDays = month.photos.filter((p) => p.day != null).length;
+  const issueNum = String(idx + 1).padStart(2, "0");
+  const monthLower = month.name.toLowerCase();
 
   page.innerHTML = `
     <div class="cal-capture" data-capture>
-      <img class="cal-bg" src="${bgForMonth(idx)}" alt=""
-           onerror="this.onerror=null;this.src='${PLACEHOLDER_BG}'" />
-      <div class="cal-bg__tint"></div>
+      <header class="mb-masthead">
+        <span class="mb-masthead__left">MoodAlbum &middot; ${state.year}</span>
+        <span class="mb-masthead__mid">Moodboard</span>
+        <span class="mb-masthead__right">Vol. ${ROMAN_NUMERALS[idx]} &middot; ${issueNum} / 12</span>
+      </header>
 
-      <div class="cal-card">
-        <div class="cal-card__top">
-          <span class="cal-card__icon" aria-hidden="true">‹</span>
-          <span class="cal-card__crumb">${state.year}</span>
-          <span class="cal-card__top-spacer"></span>
-          <span class="cal-card__icon" aria-hidden="true">▤</span>
-          <span class="cal-card__icon" aria-hidden="true">⌕</span>
-          <span class="cal-card__icon" aria-hidden="true">+</span>
-        </div>
-        <h2 class="cal-card__title">${month.name} <em>moodboard</em></h2>
-        <div class="cal-weekdays">
-          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-        </div>
-        <div class="cal-grid">${cellsHtml.join("")}</div>
+      <section class="mb-hero">
+        <h1 class="mb-hero__display">${escapeHtml(monthLower)}<sup>${issueNum}</sup></h1>
+        <aside class="mb-hero__meta">
+          <strong>Edition ${issueNum}</strong>
+          <span>${month.photos.length} frame${month.photos.length === 1 ? "" : "s"}</span>
+          <span>${taggedDays} dated</span>
+          <hr />
+          <span>${daysInMonth} days &middot; ${state.year}</span>
+        </aside>
+      </section>
+
+      <div class="mb-section">
+        <span class="mb-section__tick" aria-hidden="true"></span>
+        <span>Plates</span>
+        <span class="mb-section__rule"></span>
+        <span class="mb-section__index">${String(ordered.length).padStart(2, "0")} frames</span>
       </div>
+      <div class="mb-grid">${tilesHtml}</div>
 
-      <div class="cal-decor" data-decor></div>
+      <div class="mb-section">
+        <span class="mb-section__tick" aria-hidden="true"></span>
+        <span>Index</span>
+        <span class="mb-section__rule"></span>
+        <span class="mb-section__index">${daysInMonth} days</span>
+      </div>
+      <div class="mb-weekdays">
+        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+      </div>
+      <div class="mb-ribbon">${ribbonCells.join("")}</div>
+
+      <footer class="mb-colophon">
+        <span class="mb-colophon__left">${escapeHtml(monthLower)} &middot; ${state.year}</span>
+        <span class="mb-colophon__mid">Fin.</span>
+        <span class="mb-colophon__right">${issueNum} / 12</span>
+      </footer>
     </div>
   `;
 
   return page;
-}
-
-/* ---- Decoration placement (post-layout, uses real cell rects) ---- */
-
-function decoratePage(pageEl) {
-  const idx = +pageEl.dataset.monthIdx;
-  const month = state.months[idx];
-  const capture = pageEl.querySelector("[data-capture]");
-  const decor = pageEl.querySelector("[data-decor]");
-  if (!capture || !decor) return;
-  decor.innerHTML = "";
-
-  const capRect = capture.getBoundingClientRect();
-  const W = capRect.width;
-  const H = capRect.height;
-  if (W < 10 || H < 10) return;
-
-  const rng = rngFromSeed(idx * 1009 + (state.year % 100) * 31 + 7);
-
-  // Polaroid base size scales with capture width
-  const baseW = Math.max(78, Math.min(120, W * 0.24));
-
-  month.photos.forEach((photo, i) => {
-    let cx, cy;
-    if (photo.day) {
-      const cell = pageEl.querySelector(`.cal-cell[data-day="${photo.day}"]`);
-      if (cell) {
-        const r = cell.getBoundingClientRect();
-        cx = r.left + r.width / 2 - capRect.left;
-        cy = r.top  + r.height / 2 - capRect.top;
-      } else {
-        cx = 0.2 * W + 0.6 * W * rng();
-        cy = 0.45 * H + 0.4 * H * rng();
-      }
-    } else {
-      cx = 0.18 * W + 0.66 * W * rng();
-      cy = 0.20 * H + 0.55 * H * rng();
-    }
-    const sizeJitter = 0.92 + rng() * 0.22;
-    const w = baseW * sizeJitter;
-    const h = w * 1.18;
-    const tilt = (rng() - 0.5) * 16; // -8..+8
-    const cap = photo.note && photo.note.trim()
-      ? photo.note.trim()
-      : (photo.day ? `${month.name.slice(0,3).toLowerCase()} ${photo.day}` : "");
-
-    const x = cx - w / 2;
-    const y = cy - h / 2;
-
-    const fig = document.createElement("figure");
-    fig.className = "polaroid draggable";
-    fig.style.width  = `${w}px`;
-    setTransform(fig, x, y, tilt);
-    fig.dataset.x = x;
-    fig.dataset.y = y;
-    fig.dataset.r = tilt;
-    fig.style.zIndex = 50 + i;
-    const photoH = h - 33;
-
-    const clipKind = ["top", "tl", "tr"][Math.floor(rng() * 3)];
-    const clipSVG = rng() < 0.55 ? paperclipSVG() : binderClipSVG();
-
-    fig.innerHTML = `
-      <span class="clip clip--${clipKind}">${clipSVG}</span>
-      <img src="${photo.url}" alt="" draggable="false" style="height:${photoH}px" />
-      ${cap ? `<figcaption>${escapeHtml(cap)}</figcaption>` : ""}
-      <button class="rot-handle" type="button" aria-label="Rotate" data-rot>
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M5 12a7 7 0 1 0 2.05-4.95M5 4v4h4" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    `;
-    decor.appendChild(fig);
-    attachDraggable(fig);
-  });
-
-  // ---- Auto-scattered stickers ----
-  const stickerCount = 6 + Math.floor(rng() * 3);
-  const placedPolaroidBoxes = [...decor.querySelectorAll(".polaroid")].map((el) => el.getBoundingClientRect());
-  for (let i = 0; i < stickerCount; i++) {
-    const emoji = STICKER_SET[(i + idx) % STICKER_SET.length];
-    const size = 22 + Math.floor(rng() * 14);
-    const x = 6 + rng() * (W - size - 12);
-    const y = 60 + rng() * (H - size - 100);
-    const tilt = (rng() - 0.5) * 30;
-    const span = document.createElement("span");
-    span.className = "sticker draggable";
-    span.textContent = emoji;
-    span.style.fontSize = `${size}px`;
-    setTransform(span, x, y, tilt);
-    span.dataset.x = x;
-    span.dataset.y = y;
-    span.dataset.r = tilt;
-    span.style.zIndex = 40 + i;
-    decor.appendChild(span);
-    attachDraggable(span);
-  }
-
-  // Click empty space → deselect
-  decor.addEventListener("pointerdown", (e) => {
-    if (e.target === decor) deselectAll(pageEl);
-  });
-}
-
-function setTransform(el, x, y, r) {
-  el.style.left = "0";
-  el.style.top  = "0";
-  el.style.transform = `translate(${x}px, ${y}px) rotate(${(+r).toFixed(2)}deg)`;
-}
-
-function deselectAll(root) {
-  root.querySelectorAll(".is-selected").forEach((el) => el.classList.remove("is-selected"));
-}
-
-/* ---- Drag + rotate (pointer events) ---- */
-
-function attachDraggable(el) {
-  el.addEventListener("pointerdown", (e) => {
-    const isRot = e.target.closest("[data-rot]");
-    if (isRot) {
-      // Rotation drag
-      startRotateDrag(el, e);
-      return;
-    }
-    // Selection + move drag
-    const page = el.closest(".cal-page");
-    if (page) {
-      deselectAll(page);
-      el.classList.add("is-selected");
-    }
-    startMoveDrag(el, e);
-  });
-}
-
-function startMoveDrag(el, ev) {
-  ev.preventDefault();
-  el.setPointerCapture?.(ev.pointerId);
-  el.classList.add("is-dragging");
-  const startX = ev.clientX;
-  const startY = ev.clientY;
-  const baseX = +el.dataset.x || 0;
-  const baseY = +el.dataset.y || 0;
-  const baseR = +el.dataset.r || 0;
-
-  const onMove = (e) => {
-    const nx = baseX + (e.clientX - startX);
-    const ny = baseY + (e.clientY - startY);
-    el.dataset.x = nx;
-    el.dataset.y = ny;
-    setTransform(el, nx, ny, baseR);
-  };
-  const onUp = (e) => {
-    el.releasePointerCapture?.(e.pointerId);
-    el.classList.remove("is-dragging");
-    el.removeEventListener("pointermove", onMove);
-    el.removeEventListener("pointerup", onUp);
-    el.removeEventListener("pointercancel", onUp);
-  };
-  el.addEventListener("pointermove", onMove);
-  el.addEventListener("pointerup", onUp);
-  el.addEventListener("pointercancel", onUp);
-}
-
-function startRotateDrag(el, ev) {
-  ev.preventDefault();
-  ev.stopPropagation();
-  const handle = ev.target.closest("[data-rot]") || ev.target;
-  handle.setPointerCapture?.(ev.pointerId);
-  el.classList.add("is-dragging");
-  const rect = el.getBoundingClientRect();
-  const cx = rect.left + rect.width / 2;
-  const cy = rect.top  + rect.height / 2;
-  const baseR = +el.dataset.r || 0;
-  const baseAngle = Math.atan2(ev.clientY - cy, ev.clientX - cx) * 180 / Math.PI;
-
-  const onMove = (e) => {
-    const ang = Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI;
-    const nr = baseR + (ang - baseAngle);
-    el.dataset.r = nr;
-    setTransform(el, +el.dataset.x || 0, +el.dataset.y || 0, nr);
-  };
-  const onUp = (e) => {
-    handle.releasePointerCapture?.(e.pointerId);
-    el.classList.remove("is-dragging");
-    handle.removeEventListener("pointermove", onMove);
-    handle.removeEventListener("pointerup", onUp);
-    handle.removeEventListener("pointercancel", onUp);
-  };
-  handle.addEventListener("pointermove", onMove);
-  handle.addEventListener("pointerup", onUp);
-  handle.addEventListener("pointercancel", onUp);
-}
-
-/* ---- SVG clip glyphs ---- */
-function paperclipSVG() {
-  return `<svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true">
-    <path d="M9 4 v16 a4 4 0 0 0 8 0 v-13 a3 3 0 0 0 -6 0 v11 a2 2 0 0 0 4 0 v-9"
-      fill="none" stroke="#a9a9a9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`;
-}
-function binderClipSVG() {
-  return `<svg viewBox="0 0 28 28" width="28" height="28" aria-hidden="true">
-    <rect x="6" y="9" width="16" height="11" rx="1.2" fill="#1a1714" />
-    <rect x="9" y="11" width="10" height="2" fill="#3b3733" />
-    <path d="M9 9 l2 -4 h6 l2 4" fill="none" stroke="#1a1714" stroke-width="1.6" stroke-linecap="round"/>
-  </svg>`;
 }
 
 function escapeHtml(s) {
