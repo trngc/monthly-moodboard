@@ -1,5 +1,5 @@
 /* =============================================================
-   MoodAlbum — three-step flow (bento → detail → calendar pager)
+   Monthly Moodboard — three-step flow (bento → detail → calendar pager)
    ============================================================= */
 
 const MONTHS = [
@@ -260,7 +260,7 @@ function renderMonths() {
   textCell.setAttribute("role", "listitem");
   textCell.innerHTML = `
     <span class="bento__logo" aria-hidden="true"></span>
-    <span class="bento__line">MoodAlbum<span>a year in photos.</span></span>
+    <span class="bento__line">Monthly Moodboard<span>a year in photos.</span></span>
   `;
   monthList.appendChild(textCell);
 
